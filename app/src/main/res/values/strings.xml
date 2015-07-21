@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">DevJobs</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="searchButtonText">Search</string>
+    <string name="just_posted">Just Posted</string>
+    <string name="jobTitleText">Job title test text</string>
+    <string name="companyText">Company name text test</string>
+    <string name="jobLocText">Job loc test text</string>
+    <string name="jobPostedDateText">Days ago text</string>
+    <string name="locationHintText">Location</string>
+    <string name="descriptionHintText">Description</string>
+</resources>
