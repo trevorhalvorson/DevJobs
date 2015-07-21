@@ -10,4 +10,6 @@
     <string name="jobPostedDateText">Days ago text</string>
     <string name="locationHintText">Location</string>
     <string name="descriptionHintText">Description</string>
+    <string name="subtitleText">Most Recent</string>
+    <string name="action_search">Search</string>
 </resources>
