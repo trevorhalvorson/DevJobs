@@ -11,5 +11,8 @@
     <string name="locationHintText">Location</string>
     <string name="descriptionHintText">Description</string>
     <string name="subtitleText">Most Recent</string>
-    <string name="action_search">Search</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_save_search">Save Search</string>
+    <string name="action_restore">Restore Hidden Jobs</string>
+    <string name="viewOnWebText">View on GitHub</string>
 </resources>
