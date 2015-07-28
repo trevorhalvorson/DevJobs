@@ -3,15 +3,17 @@
     android:id="@+id/detailFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.trevorhalvorson.devjobs.JobDetailFragment">
+    tools:context="com.trevorhalvorson.devjobs.fragment.JobDetailFragment">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar" />
 
     <Button
         android:id="@+id/goToJobButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/toolbar"
         android:text="@string/viewOnWebText" />
 
     <ScrollView

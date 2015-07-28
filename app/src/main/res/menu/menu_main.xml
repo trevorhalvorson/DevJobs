@@ -9,10 +9,10 @@
         android:title="@string/action_save_search"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_refresh"
+        android:id="@+id/action_view_saved_jobs"
         android:icon="@android:drawable/ic_menu_search"
         android:orderInCategory="2"
-        android:title="@string/action_refresh"
+        android:title="@string/action_view_saved_jobs"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_restore_jobs"

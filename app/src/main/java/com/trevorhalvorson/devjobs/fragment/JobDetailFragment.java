@@ -1,16 +1,21 @@
-package com.trevorhalvorson.devjobs;
+package com.trevorhalvorson.devjobs.fragment;
 
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.trevorhalvorson.devjobs.R;
+import com.trevorhalvorson.devjobs.activity.JobDetailActivity;
 
 
 public class JobDetailFragment extends Fragment {
@@ -26,8 +31,15 @@ public class JobDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         final View rootView = inflater.inflate(R.layout.fragment_job_detail, container, false);
-        final Bundle extras = getActivity().getIntent().getExtras();
         Button goToJobBtn = (Button) rootView.findViewById(R.id.goToJobButton);
+        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
+
+        final Bundle extras = getActivity().getIntent().getExtras();
+
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        activity.setSupportActionBar(toolbar);
+        activity.getSupportActionBar().setTitle(extras.getString(JobDetailActivity.EXTRA_TITLE));
+        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         goToJobBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

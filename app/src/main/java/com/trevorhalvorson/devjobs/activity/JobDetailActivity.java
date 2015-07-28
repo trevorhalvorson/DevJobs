@@ -1,9 +1,12 @@
-package com.trevorhalvorson.devjobs;
+package com.trevorhalvorson.devjobs.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.trevorhalvorson.devjobs.R;
+import com.trevorhalvorson.devjobs.fragment.JobDetailFragment;
 
 public class JobDetailActivity extends AppCompatActivity {
     private static final String TAG = JobDetailActivity.class.getSimpleName();
@@ -20,7 +23,6 @@ public class JobDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_jobdetail);
 
         Bundle extras = getIntent().getExtras();
-        getSupportActionBar().setTitle(extras.getString(EXTRA_TITLE));
 
         if (savedInstanceState == null) {
             JobDetailFragment fragment = new JobDetailFragment();
@@ -38,6 +40,10 @@ public class JobDetailActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.onBackPressed();
+        }
         return super.onOptionsItemSelected(item);
     }
 }

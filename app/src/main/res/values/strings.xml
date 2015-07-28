@@ -15,4 +15,9 @@
     <string name="action_save_search">Save Search</string>
     <string name="action_restore">Restore Hidden Jobs</string>
     <string name="viewOnWebText">View on GitHub</string>
+    <string name="action_view_saved_jobs">View Saved Jobs</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="saved_job_snackBar">Added to Saved Jobs</string>
+    <string name="snackBar_undo">UNDO</string>
+    <string name="hide_job_snackBar">Job Hidden</string>
 </resources>

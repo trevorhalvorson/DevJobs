@@ -1,4 +1,4 @@
-package com.trevorhalvorson.devjobs;
+package com.trevorhalvorson.devjobs.adapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.trevorhalvorson.devjobs.R;
+import com.trevorhalvorson.devjobs.activity.JobDetailActivity;
 import com.trevorhalvorson.devjobs.model.Job;
 
 import java.text.DateFormat;
@@ -41,6 +43,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
     @Override
     public void onBindViewHolder(final JobViewHolder holder, final int position) {
         final Job currentJob = jobData.get(position);
+        holder.itemView.isClickable();
         holder.jobTitle.setText(currentJob.getTitle());
         holder.jobCompany.setText(currentJob.getCompany());
         holder.jobLocation.setText(currentJob.getLocation());
