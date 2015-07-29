@@ -1,6 +1,7 @@
 package com.trevorhalvorson.devjobs.fragment;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -21,8 +22,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.trevorhalvorson.devjobs.DividerItemDecoration;
 import com.trevorhalvorson.devjobs.GHJobsAPI;
 import com.trevorhalvorson.devjobs.R;
+import com.trevorhalvorson.devjobs.activity.SettingsActivity;
 import com.trevorhalvorson.devjobs.adapter.JobAdapter;
 import com.trevorhalvorson.devjobs.model.Job;
 
@@ -42,7 +45,7 @@ public class JobListFragment extends Fragment {
     private Toolbar toolbar;
     private RecyclerView recyclerView;
     private ArrayList<Job> jobList, savedJobs;
-    private ArrayList<String> hiddenJobList, savedJobList, savedSearchesList;
+    private ArrayList<String> hiddenJobList, savedJobList;
     private JobAdapter adapter;
     private Button searchButton;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -58,6 +61,7 @@ public class JobListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        setRetainInstance(true);
     }
 
     @Override
@@ -70,7 +74,6 @@ public class JobListFragment extends Fragment {
         savedJobs = new ArrayList<>();
         hiddenJobList = new ArrayList<>();
         savedJobList = new ArrayList<>();
-        savedSearchesList = new ArrayList<>();
         toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.coordinatorLayout);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
@@ -129,11 +132,13 @@ public class JobListFragment extends Fragment {
             recyclerView.setVisibility(View.VISIBLE);
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
             swipeRefreshLayout.setRefreshing(false);
         } else {
             Snackbar.make(coordinatorLayout, "Sorry, no jobs found.", Snackbar.LENGTH_LONG).show();
         }
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 return false;
@@ -148,7 +153,7 @@ public class JobListFragment extends Fragment {
                     case ItemTouchHelper.LEFT:
                         savedJobList.add(jobList.get(viewHolder.getAdapterPosition()).getId());
                         savedJobs.add(swipedJob);
-                        Snackbar.make(coordinatorLayout, R.string.saved_job_snackBar, Snackbar.LENGTH_LONG).setAction(R.string.snackBar_undo, new View.OnClickListener() {
+                        Snackbar.make(coordinatorLayout, R.string.saved_job_sb, Snackbar.LENGTH_LONG).setAction(R.string.sb_action, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 savedJobList.remove(savedJobList.size() - 1);
@@ -162,7 +167,7 @@ public class JobListFragment extends Fragment {
                     //Hide Job
                     case ItemTouchHelper.RIGHT:
                         hiddenJobList.add(jobList.get(viewHolder.getAdapterPosition()).getId());
-                        Snackbar.make(coordinatorLayout, R.string.hide_job_snackBar, Snackbar.LENGTH_LONG).setAction(R.string.snackBar_undo, new View.OnClickListener() {
+                        Snackbar.make(coordinatorLayout, R.string.hide_job_sb, Snackbar.LENGTH_LONG).setAction(R.string.sb_action, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 hiddenJobList.remove(hiddenJobList.size() - 1);
@@ -177,6 +182,7 @@ public class JobListFragment extends Fragment {
                 adapter.notifyItemRemoved(pos);
             }
         };
+
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
@@ -203,12 +209,9 @@ public class JobListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_save_search:
-                String search = (searchJobDescText + "*" + searchLocText)
-                        .toLowerCase().trim();
-                if (!savedSearchesList.contains(search)) {
-                    savedSearchesList.add(search);
-                }
+            case R.id.action_settings:
+                Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(intent);
                 return true;
             case R.id.action_view_saved_jobs:
                 //TODO: launch SavedJobsFragment

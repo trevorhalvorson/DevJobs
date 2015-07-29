@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
     <item
-        android:id="@+id/action_save_search"
+        android:id="@+id/action_settings"
         android:icon="@android:drawable/ic_menu_search"
         android:orderInCategory="1"
-        android:title="@string/action_save_search"
+        android:title="@string/action_settings"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_view_saved_jobs"

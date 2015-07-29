@@ -2,8 +2,6 @@ package com.trevorhalvorson.devjobs.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.trevorhalvorson.devjobs.R;
 import com.trevorhalvorson.devjobs.fragment.JobDetailFragment;
@@ -16,6 +14,7 @@ public class JobDetailActivity extends AppCompatActivity {
     public static final String EXTRA_LOCATION = "location";
     public static final String EXTRA_DATE = "date";
     public static final String EXTRA_URL = "url";
+    public static final String EXTRA_ID = "id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,19 +30,5 @@ public class JobDetailActivity extends AppCompatActivity {
                     .add(R.id.container, fragment)
                     .commit();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                this.onBackPressed();
-        }
-        return super.onOptionsItemSelected(item);
     }
 }

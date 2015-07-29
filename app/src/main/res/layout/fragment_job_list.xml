@@ -14,12 +14,12 @@
             android:id="@+id/toolbar"
             layout="@layout/toolbar" />
 
-
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/toolbar"
+            android:background="@color/md_blue_grey_500"
             android:orientation="horizontal"
             android:weightSum="3">
 
@@ -28,21 +28,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="@string/descriptionHintText" />
+                android:hint="@string/description_hint" />
 
             <EditText
                 android:id="@+id/editLoc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="@string/locationHintText" />
+                android:hint="@string/location_hint" />
 
             <Button
                 android:id="@+id/searchButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/searchButtonText" />
+                android:text="@string/search" />
 
         </LinearLayout>
 

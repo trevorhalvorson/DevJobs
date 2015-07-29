@@ -60,6 +60,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                 intent.putExtra(JobDetailActivity.EXTRA_LOCATION, currentJob.getLocation());
                 intent.putExtra(JobDetailActivity.EXTRA_DATE, getDateSpan(currentJob.getCreated_at()));
                 intent.putExtra(JobDetailActivity.EXTRA_URL, currentJob.getUrl());
+                intent.putExtra(JobDetailActivity.EXTRA_ID, currentJob.getId());
                 context.startActivity(intent);
             }
 
