@@ -4,8 +4,12 @@ package com.trevorhalvorson.devjobs.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,7 +23,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 
 import com.trevorhalvorson.devjobs.DividerItemDecoration;
@@ -47,11 +50,13 @@ public class JobListFragment extends Fragment {
     private ArrayList<Job> jobList, savedJobs;
     private ArrayList<String> hiddenJobList, savedJobList;
     private JobAdapter adapter;
-    private Button searchButton;
+    private FloatingActionButton searchButton;
     private SwipeRefreshLayout swipeRefreshLayout;
     private String searchJobDescText, searchLocText;
     private EditText searchDesc, searchLoc;
     private Job swipedJob;
+    private AppCompatActivity activity;
+    private DrawerLayout drawerLayout;
 
     public JobListFragment() {
 
@@ -81,8 +86,18 @@ public class JobListFragment extends Fragment {
         searchLoc = (EditText) rootView.findViewById(R.id.editLoc);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.jobListView);
         swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
-        searchButton = (Button) rootView.findViewById(R.id.searchButton);
+        searchButton = (FloatingActionButton) rootView.findViewById(R.id.searchButton);
+        searchButton.setImageResource(R.drawable.ic_search);
         toolbar.setTitle(getString(R.string.app_name));
+        activity = (AppCompatActivity) getActivity();
+        activity.setSupportActionBar(toolbar);
+        activity.getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
+        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        drawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
+        NavigationView navigationView = (NavigationView) getActivity().findViewById(R.id.nav_view);
+        if (navigationView != null) {
+            setupDrawerContent(navigationView);
+        }
         recyclerView.setVisibility(View.GONE);
         swipeRefreshLayout.setVisibility(View.GONE);
         searchButton.setOnClickListener(new View.OnClickListener() {
@@ -99,8 +114,43 @@ public class JobListFragment extends Fragment {
         return rootView;
     }
 
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        switch (menuItem.getItemId()) {
+                            case R.id.saved_jobs:
+                                jobList.clear();
+                                jobList.addAll(savedJobs);
+                                recyclerView.setAdapter(adapter);
+                                menuItem.setChecked(true);
+                                drawerLayout.closeDrawers();
+                                return true;
+                            case R.id.nav_home:
+                                jobList.clear();
+                                recyclerView.setAdapter(adapter);
+                                searchJobTask(searchJobDescText, searchLocText);
+                                menuItem.setChecked(true);
+                                drawerLayout.closeDrawers();
+                                return true;
+                            case R.id.settings:
+                                Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                                startActivity(intent);
+                                menuItem.setChecked(true);
+                                drawerLayout.closeDrawers();
+                                return true;
+                            default:
+                                drawerLayout.closeDrawers();
+                                return true;
+                        }
+
+                    }
+                });
+    }
 
     public void searchJobTask(String search, String location) {
+        recyclerView.setVisibility(View.GONE);
         RestAdapter adapter = new RestAdapter.Builder()
                 .setEndpoint(ENDPOINT)
                 .build();
@@ -135,7 +185,7 @@ public class JobListFragment extends Fragment {
             recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
             swipeRefreshLayout.setRefreshing(false);
         } else {
-            Snackbar.make(coordinatorLayout, "Sorry, no jobs found.", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(coordinatorLayout, "No jobs found", Snackbar.LENGTH_LONG).show();
         }
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
@@ -190,7 +240,7 @@ public class JobListFragment extends Fragment {
     private void setUpSwipeRefresh() {
         swipeRefreshLayout.setVisibility(View.VISIBLE);
         swipeRefreshLayout.setColorSchemeColors(
-                getResources().getColor(R.color.md_blue_grey_500));
+                getResources().getColor(R.color.md_blue_grey_700));
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -209,20 +259,13 @@ public class JobListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                Intent intent = new Intent(getActivity(), SettingsActivity.class);
-                startActivity(intent);
-                return true;
-            case R.id.action_view_saved_jobs:
-                //TODO: launch SavedJobsFragment
-                jobList.clear();
-                jobList.addAll(savedJobs);
-                recyclerView.setAdapter(adapter);
-                return true;
             case R.id.action_restore_jobs:
                 jobList.clear();
                 hiddenJobList.clear();
                 searchJobTask(searchJobDescText, searchLocText);
+                return true;
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
