@@ -26,4 +26,5 @@
     <string name="wv_on">View within the app</string>
     <string name="save_job">Save Job</string>
     <string name="action_save">Save Job</string>
+    <string name="share">Share</string>
 </resources>

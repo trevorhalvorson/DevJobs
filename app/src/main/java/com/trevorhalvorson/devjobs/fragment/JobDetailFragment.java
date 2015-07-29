@@ -7,10 +7,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +34,8 @@ public class JobDetailFragment extends Fragment {
     private TextView jobDescription;
     private Toolbar toolbar;
     private AppCompatActivity activity;
+    private ShareActionProvider shareActionProvider;
+    private String jobUrl;
 
     public JobDetailFragment() {
     }
@@ -41,7 +47,6 @@ public class JobDetailFragment extends Fragment {
         setHasOptionsMenu(true);
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         webViewPref = prefs.getBoolean(getString(R.string.wv_key), true);
-
     }
 
     @Override
@@ -62,7 +67,7 @@ public class JobDetailFragment extends Fragment {
         activity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
         activity.getSupportActionBar().setTitle(extras.getString(JobDetailActivity.EXTRA_TITLE));
         jobDescription.setText(Html.fromHtml(extras.getString(JobDetailActivity.EXTRA_DESCRIPTION)));
-
+        jobUrl = extras.getString(JobDetailActivity.EXTRA_URL);
         webButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -81,6 +86,18 @@ public class JobDetailFragment extends Fragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_detail, menu);
+        MenuItem menuItem = menu.findItem(R.id.menu_item_share);
+
+        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+        if (jobUrl != null) {
+            shareActionProvider.setShareIntent(shareIntent());
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -92,5 +109,12 @@ public class JobDetailFragment extends Fragment {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private Intent shareIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, jobUrl);
+        return shareIntent;
     }
 }
