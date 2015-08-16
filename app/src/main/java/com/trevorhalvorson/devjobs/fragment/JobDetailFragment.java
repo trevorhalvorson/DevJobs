@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +19,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.trevorhalvorson.devjobs.R;
@@ -26,16 +26,15 @@ import com.trevorhalvorson.devjobs.activity.JobDetailActivity;
 
 
 public class JobDetailFragment extends Fragment {
+
     private static final String TAG = JobDetailFragment.class.getSimpleName();
-    private SharedPreferences prefs;
     private Bundle extras;
     private boolean webViewPref;
-    private Button webButton;
-    private TextView jobDescription;
-    private Toolbar toolbar;
-    private AppCompatActivity activity;
-    private ShareActionProvider shareActionProvider;
-    private String jobUrl;
+    private FloatingActionButton mFloatingActionButton;
+    private TextView mDescriptionTextView;
+    private Toolbar mToolbar;
+    private AppCompatActivity mAppCompatActivity;
+    private String mJobUrl;
 
     public JobDetailFragment() {
     }
@@ -45,7 +44,7 @@ public class JobDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         webViewPref = prefs.getBoolean(getString(R.string.wv_key), true);
     }
 
@@ -54,21 +53,22 @@ public class JobDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         final View rootView = inflater.inflate(R.layout.fragment_job_detail, container, false);
-        webButton = (Button) rootView.findViewById(R.id.webButton);
-        toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
-        jobDescription = (TextView) rootView.findViewById(R.id.jobDescriptionTextView);
+        mFloatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        mToolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
+        mDescriptionTextView = (TextView) rootView.findViewById(R.id.description_text_view);
 
         extras = getActivity().getIntent().getExtras();
 
-        activity = (AppCompatActivity) getActivity();
-        activity.setSupportActionBar(toolbar);
-        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        activity.getSupportActionBar().setHomeButtonEnabled(true);
-        activity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
-        activity.getSupportActionBar().setTitle(extras.getString(JobDetailActivity.EXTRA_TITLE));
-        jobDescription.setText(Html.fromHtml(extras.getString(JobDetailActivity.EXTRA_DESCRIPTION)));
-        jobUrl = extras.getString(JobDetailActivity.EXTRA_URL);
-        webButton.setOnClickListener(new View.OnClickListener() {
+        mAppCompatActivity = (AppCompatActivity) getActivity();
+        mAppCompatActivity.setSupportActionBar(mToolbar);
+        mAppCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        mAppCompatActivity.getSupportActionBar().setHomeButtonEnabled(true);
+        mAppCompatActivity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+        mAppCompatActivity.getSupportActionBar().setTitle(extras.getString(JobDetailActivity.EXTRA_TITLE));
+        mDescriptionTextView.setText(Html.fromHtml(extras.getString(JobDetailActivity.EXTRA_DESCRIPTION)));
+        mJobUrl = extras.getString(JobDetailActivity.EXTRA_URL);
+        mFloatingActionButton.setImageResource(R.drawable.ic_web);
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!webViewPref) {
@@ -76,7 +76,7 @@ public class JobDetailFragment extends Fragment {
                             Uri.parse(extras.getString(JobDetailActivity.EXTRA_URL)));
                     startActivity(intent);
                 } else {
-                    getFragmentManager().beginTransaction().replace(R.id.detailContainer,
+                    getFragmentManager().beginTransaction().replace(R.id.detail_fragment,
                             new JobWebView()).addToBackStack(null).commit();
                 }
             }
@@ -90,9 +90,9 @@ public class JobDetailFragment extends Fragment {
         inflater.inflate(R.menu.menu_detail, menu);
         MenuItem menuItem = menu.findItem(R.id.menu_item_share);
 
-        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
 
-        if (jobUrl != null) {
+        if (mJobUrl != null) {
             shareActionProvider.setShareIntent(shareIntent());
         }
     }
@@ -101,8 +101,8 @@ public class JobDetailFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (activity.getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                    activity.getSupportFragmentManager().popBackStack();
+                if (mAppCompatActivity.getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    mAppCompatActivity.getSupportFragmentManager().popBackStack();
                 } else {
                     getActivity().onBackPressed();
                 }
@@ -114,7 +114,7 @@ public class JobDetailFragment extends Fragment {
     private Intent shareIntent() {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, jobUrl);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mJobUrl);
         return shareIntent;
     }
 }

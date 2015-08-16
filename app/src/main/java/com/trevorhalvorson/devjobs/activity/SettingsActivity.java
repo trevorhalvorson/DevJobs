@@ -12,19 +12,19 @@ import com.trevorhalvorson.devjobs.R;
  */
 public class SettingsActivity extends AppCompatActivity {
 
-    private Toolbar toolbar;
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        toolbar = (Toolbar) findViewById(R.id.settingsToolbar);
-        setSupportActionBar(toolbar);
-        if (toolbar != null) {
+        mToolbar = (Toolbar) findViewById(R.id.settingsToolbar);
+        setSupportActionBar(mToolbar);
+        if (mToolbar != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
         }
-        getFragmentManager().beginTransaction().replace(R.id.settingsContainer,
+        getFragmentManager().beginTransaction().replace(R.id.settings_container,
                 new SettingsFragment()).commit();
     }
 

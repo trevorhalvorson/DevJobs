@@ -1,65 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    android:id="@+id/coordinator_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".JobListFragment">
 
     <RelativeLayout
+        android:id="@+id/relative_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <include
             android:id="@+id/toolbar"
-            layout="@layout/toolbar" />
+            layout="@layout/toolbar"/>
 
-        <LinearLayout
-            android:id="@+id/linearLayout"
+
+        <EditText
+            android:id="@+id/location_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/toolbar"
             android:background="@color/md_blue_grey_500"
-            android:orientation="horizontal"
-            android:weightSum="4">
+            android:descendantFocusability="beforeDescendants"
+            android:elevation="@dimen/appbar_elevation"
+            android:hint="@string/location_hint"
+            android:imeOptions="actionSearch|flagNavigateNext"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="16dp"
+            android:visibility="gone"/>
 
-            <EditText
-                android:id="@+id/editDesc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/description_hint"
-                android:layout_weight="1" />
-
-            <EditText
-                android:id="@+id/editLoc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/location_hint"
-                android:layout_weight="1" />
-
-        </LinearLayout>
 
         <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/swipeRefresh"
+            android:id="@+id/swipe_refresh_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/linearLayout">
+            android:layout_below="@+id/location_edit_text">
 
             <android.support.v7.widget.RecyclerView
-                android:id="@+id/jobListView"
+                android:id="@+id/jobs_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="vertical" />
+                android:scrollbars="vertical"/>
+
         </android.support.v4.widget.SwipeRefreshLayout>
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/searchButton"
+        <ProgressBar
+            android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/toolbar"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="8dp" />
+            android:layout_below="@+id/location_edit_text"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone"/>
+
+        <ProgressBar
+            android:id="@+id/horizontal_progress_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:indeterminate="true"
+            android:visibility="gone"/>
 
     </RelativeLayout>
+
+
+    <include
+        android:id="@+id/fab"
+        layout="@layout/fab"/>
 
 </android.support.design.widget.CoordinatorLayout>

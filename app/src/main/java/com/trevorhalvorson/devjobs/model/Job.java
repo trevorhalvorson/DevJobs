@@ -1,9 +1,11 @@
 package com.trevorhalvorson.devjobs.model;
 
+import java.io.Serializable;
+
 /**
  * Created by Trevor on 7/15/2015.
  */
-public class Job {
+public class Job implements Serializable {
     private String id;
     private String created_at;
     private String title;

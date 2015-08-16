@@ -2,11 +2,14 @@ package com.trevorhalvorson.devjobs.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 import com.trevorhalvorson.devjobs.R;
 import com.trevorhalvorson.devjobs.activity.JobDetailActivity;
@@ -14,7 +17,8 @@ import com.trevorhalvorson.devjobs.activity.JobDetailActivity;
 
 public class JobWebView extends Fragment {
 
-    private WebView webView;
+    private WebView mWebView;
+    private ProgressBar mProgressBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -22,19 +26,43 @@ public class JobWebView extends Fragment {
 
         final Bundle extras = getActivity().getIntent().getExtras();
 
-        webView = (WebView) rootView.findViewById(R.id.jobWebView);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setLoadWithOverviewMode(true);
-        webView.getSettings().setUseWideViewPort(true);
-        webView.getSettings().setBuiltInZoomControls(true);
-        webView.getSettings().setDisplayZoomControls(false);
-        webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        webView.loadUrl(extras.getString(JobDetailActivity.EXTRA_URL));
-        webView.setWebViewClient(new WebViewClient() {
+        mProgressBar =
+                (ProgressBar) rootView.findViewById(R.id.web_view_progress_bar);
+        mProgressBar.setMax(100);
+
+        mWebView = (WebView) rootView.findViewById(R.id.web_view);
+        mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.getSettings().setLoadWithOverviewMode(true);
+        mWebView.getSettings().setUseWideViewPort(true);
+        mWebView.getSettings().setBuiltInZoomControls(true);
+        mWebView.getSettings().setDisplayZoomControls(false);
+        mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        mWebView.loadUrl(extras.getString(JobDetailActivity.EXTRA_URL));
+        mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
                 return true;
+            }
+        });
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            public void onProgressChanged(WebView webview, int newProgress) {
+                if (newProgress == 100) {
+                    mProgressBar.setVisibility(View.GONE);
+                } else {
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    mProgressBar.setProgress(newProgress);
+                }
+            }
+
+            public void onReceivedTitle(WebView webView, String title) {
+                AppCompatActivity activity = (AppCompatActivity) getActivity();
+                activity.getSupportActionBar().setSubtitle(title);
+            }
+        });
+        mWebView.setWebViewClient(new WebViewClient() {
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return false;
             }
         });
 

@@ -22,27 +22,27 @@ import java.util.Locale;
 
 public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
     private static final String TAG = JobAdapter.class.getSimpleName();
-    private final LayoutInflater inflater;
-    private Context context;
-    private ArrayList<Job> jobData = new ArrayList<>();
+    private final LayoutInflater mLayoutInflater;
+    private Context mContext;
+    private ArrayList<Job> mJobs = new ArrayList<>();
 
-    public JobAdapter(Context context, ArrayList<Job> jobData) {
-        inflater = LayoutInflater.from(context);
-        this.jobData = jobData;
+    public JobAdapter(Context context, ArrayList<Job> jobs) {
+        mLayoutInflater = LayoutInflater.from(context);
+        this.mJobs = jobs;
     }
 
     @Override
     public JobViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = inflater.inflate(R.layout.job_row, parent, false);
+        View view = mLayoutInflater.inflate(R.layout.job_row, parent, false);
         JobViewHolder holder = new JobViewHolder(view);
-        context = parent.getContext();
+        mContext = parent.getContext();
 
         return holder;
     }
 
     @Override
     public void onBindViewHolder(final JobViewHolder holder, final int position) {
-        final Job currentJob = jobData.get(position);
+        final Job currentJob = mJobs.get(position);
         holder.itemView.isClickable();
         holder.jobTitle.setText(currentJob.getTitle());
         holder.jobCompany.setText(currentJob.getCompany());
@@ -53,7 +53,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(context, JobDetailActivity.class);
+                Intent intent = new Intent(mContext, JobDetailActivity.class);
                 intent.putExtra(JobDetailActivity.EXTRA_TITLE, currentJob.getTitle());
                 intent.putExtra(JobDetailActivity.EXTRA_DESCRIPTION, currentJob.getDescription());
                 intent.putExtra(JobDetailActivity.EXTRA_COMPANY, currentJob.getCompany());
@@ -61,7 +61,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                 intent.putExtra(JobDetailActivity.EXTRA_DATE, getDateSpan(currentJob.getCreated_at()));
                 intent.putExtra(JobDetailActivity.EXTRA_URL, currentJob.getUrl());
                 intent.putExtra(JobDetailActivity.EXTRA_ID, currentJob.getId());
-                context.startActivity(intent);
+                mContext.startActivity(intent);
             }
 
 
@@ -70,7 +70,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
     @Override
     public int getItemCount() {
-        return jobData.size();
+        return mJobs.size();
     }
 
     class JobViewHolder extends RecyclerView.ViewHolder {
@@ -97,7 +97,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             return null;
         }
         if (date.after(new Date())) {
-            return context.getString(R.string.just_posted);
+            return mContext.getString(R.string.just_posted);
         }
         return DateUtils.getRelativeTimeSpanString(date.getTime());
     }

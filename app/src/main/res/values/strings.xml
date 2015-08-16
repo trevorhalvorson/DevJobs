@@ -8,7 +8,7 @@
     <string name="company">Company name text test</string>
     <string name="job_location">Job loc test text</string>
     <string name="job_date">Days ago text</string>
-    <string name="location_hint">Location</string>
+    <string name="location_hint">Enter location</string>
     <string name="description_hint">Description</string>
     <string name="subtitle">Most Recent</string>
     <string name="action_restore">Restore Hidden Jobs</string>
@@ -29,4 +29,6 @@
     <string name="share">Share</string>
     <string name="welcome">Welcome to DevJobs</string>
     <string name="home">Home</string>
+    <string name="remove_saved_job">Removed from Saved Jobs</string>
+    <string name="search_description">Enter job description</string>
 </resources>
