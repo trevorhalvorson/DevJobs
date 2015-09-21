@@ -19,6 +19,7 @@ public class JobListActivity extends SingleFragmentActivity
     public void onJobSelected(Job job) {
         Fragment jobDetailFragment = JobDetailFragment.newInstance(job);
         getSupportFragmentManager().beginTransaction()
+                .addToBackStack(null)
                 .replace(R.id.fragment_container, jobDetailFragment)
                 .commit();
     }

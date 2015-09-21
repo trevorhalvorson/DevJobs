@@ -8,7 +8,6 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -29,6 +28,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
+import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFragment;
 import com.trevorhalvorson.devjobs.DividerItemDecoration;
 import com.trevorhalvorson.devjobs.GHJobsAPI;
 import com.trevorhalvorson.devjobs.R;
@@ -48,7 +48,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
-public class JobListFragment extends Fragment implements EditLocationDialog.EditLocationDialogListener {
+public class JobListFragment extends StatedFragment implements EditLocationDialog.EditLocationDialogListener {
 
     private static final String TAG = JobListFragment.class.getSimpleName();
     private static final String KEY_SAVE_STATE = "KEY_JOB_LIST";
@@ -60,8 +60,9 @@ public class JobListFragment extends Fragment implements EditLocationDialog.Edit
     private DrawerLayout mDrawerLayout;
     private RecyclerView mRecyclerView;
     private ArrayList<Job> mJobArrayList;
+    private ArrayList<String> mSavedSearches;
     private Adapter mJobAdapter;
-    private String mJobDescriptionString;
+    private String mJobDescriptionString = "";
     private String mLocationString = "";
     private GHJobsAPI mAPI;
     private int mPageCount;
@@ -88,6 +89,26 @@ public class JobListFragment extends Fragment implements EditLocationDialog.Edit
     }
 
     @Override
+    protected void onSaveState(Bundle outState) {
+        super.onSaveState(outState);
+        outState.putSerializable(KEY_SAVE_STATE, mJobArrayList);
+    }
+
+    @Override
+    protected void onRestoreState(Bundle savedInstanceState) {
+        super.onRestoreState(savedInstanceState);
+        mJobArrayList = (ArrayList<Job>) savedInstanceState.getSerializable(KEY_SAVE_STATE);
+        mJobAdapter = new Adapter(mJobArrayList);
+        mRecyclerView.setAdapter(mJobAdapter);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(KEY_SAVE_STATE, mJobArrayList);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
@@ -96,12 +117,6 @@ public class JobListFragment extends Fragment implements EditLocationDialog.Edit
                 .setEndpoint(ENDPOINT)
                 .build();
         mAPI = mRestAdapter.create(GHJobsAPI.class);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putSerializable(KEY_SAVE_STATE, mJobArrayList);
     }
 
     @Override
@@ -142,7 +157,12 @@ public class JobListFragment extends Fragment implements EditLocationDialog.Edit
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "onClick ");
+                if (!mJobDescriptionString.equals("")) {
+                    mSavedSearches.add(mJobDescriptionString);
+                } else {
+                    Snackbar.make(mCoordinatorLayout, R.string.empty_search_text, Snackbar.LENGTH_LONG)
+                            .show();
+                }
             }
         });
 
@@ -334,7 +354,7 @@ public class JobListFragment extends Fragment implements EditLocationDialog.Edit
             Log.i(TAG, "updateDisplay ");
             mJobAdapter = new Adapter(jobs);
             mRecyclerView.setAdapter(mJobAdapter);
-            //setupScrollListenerRecyclerView();
+            setupScrollListenerRecyclerView();
         } else {
             Snackbar.make(mCoordinatorLayout, R.string.no_jobs_text, Snackbar.LENGTH_LONG).show();
         }
@@ -388,5 +408,6 @@ public class JobListFragment extends Fragment implements EditLocationDialog.Edit
     @Override
     public void onFinishEditDialog(String inputText) {
         mLocationString = inputText;
+        Log.i(TAG, "onFinishEditDialog " + mLocationString);
     }
 }

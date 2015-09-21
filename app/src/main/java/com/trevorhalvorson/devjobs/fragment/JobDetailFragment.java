@@ -38,13 +38,9 @@ public class JobDetailFragment extends Fragment {
         return fragment;
     }
 
-    private boolean webViewPref;
-    private FloatingActionButton mFloatingActionButton;
-    private TextView mDescriptionTextView;
-    private Toolbar mToolbar;
+    private boolean mWebViewPref;
     private AppCompatActivity mAppCompatActivity;
     private String mJobUrl;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,7 +48,7 @@ public class JobDetailFragment extends Fragment {
         setRetainInstance(true);
         setHasOptionsMenu(true);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        webViewPref = prefs.getBoolean(getString(R.string.wv_key), true);
+        mWebViewPref = prefs.getBoolean(getString(R.string.wv_key), true);
     }
 
     @Override
@@ -63,28 +59,37 @@ public class JobDetailFragment extends Fragment {
 
         final Job job = (Job) getArguments().getSerializable(ARG_JOB_KEY);
 
-        mFloatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab);
-        mToolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
-        mDescriptionTextView = (TextView) rootView.findViewById(R.id.description_text_view);
+        FloatingActionButton floatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.detail_toolbar);
+        TextView descriptionTextView = (TextView) rootView.findViewById(R.id.description_text_view);
         mAppCompatActivity = (AppCompatActivity) getActivity();
-        mAppCompatActivity.setSupportActionBar(mToolbar);
+        mAppCompatActivity.setSupportActionBar(toolbar);
         mAppCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mAppCompatActivity.getSupportActionBar().setHomeButtonEnabled(true);
         mAppCompatActivity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
         mAppCompatActivity.getSupportActionBar().setTitle(job.getTitle());
-        mDescriptionTextView.setText(Html.fromHtml(job.getDescription()));
-        mJobUrl = job.getUrl();
-        mFloatingActionButton.setImageResource(R.drawable.ic_web);
-        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!webViewPref) {
+                getActivity().onBackPressed();
+            }
+        });
+
+        descriptionTextView.setText(Html.fromHtml(job.getDescription()));
+        mJobUrl = job.getUrl();
+        floatingActionButton.setImageResource(R.drawable.ic_web);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!mWebViewPref) {
                     Intent intent = new Intent(Intent.ACTION_VIEW,
                             Uri.parse(job.getUrl()));
                     startActivity(intent);
                 } else {
                     Fragment jobWebViewFragment = JobWebViewFragment.newInstance(mJobUrl);
-                    getActivity().getSupportFragmentManager().beginTransaction()
+                    getActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .addToBackStack(null)
                             .replace(R.id.fragment_container, jobWebViewFragment)
                             .commit();
                 }

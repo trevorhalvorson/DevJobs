@@ -7,14 +7,14 @@
     tools:context="com.trevorhalvorson.devjobs.fragment.JobDetailFragment">
 
     <include
-        android:id="@+id/toolbar"
+        android:id="@+id/detail_toolbar"
         layout="@layout/toolbar"/>
 
     <ScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/toolbar"
+        android:layout_below="@id/detail_toolbar"
         android:layout_marginLeft="100dp"
         android:layout_marginRight="100dp"
         android:layout_marginTop="@dimen/abc_action_bar_default_height_material">

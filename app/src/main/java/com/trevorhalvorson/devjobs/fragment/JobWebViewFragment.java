@@ -3,6 +3,7 @@ package com.trevorhalvorson.devjobs.fragment;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,33 +27,49 @@ public class JobWebViewFragment extends Fragment {
         return fragment;
     }
 
-    private WebView mWebView;
+    private Toolbar mToolbar;
+    private AppCompatActivity mAppCompatActivity;
     private ProgressBar mProgressBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_job_web_view, container, false);
 
+        mToolbar = (Toolbar) rootView.findViewById(R.id.web_toolbar);
+
         mProgressBar =
                 (ProgressBar) rootView.findViewById(R.id.web_view_progress_bar);
         mProgressBar.setMax(100);
 
-        mWebView = (WebView) rootView.findViewById(R.id.web_view);
-        mWebView.getSettings().setJavaScriptEnabled(true);
-        mWebView.getSettings().setLoadWithOverviewMode(true);
-        mWebView.getSettings().setUseWideViewPort(true);
-        mWebView.getSettings().setBuiltInZoomControls(true);
-        mWebView.getSettings().setDisplayZoomControls(false);
-        mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        mWebView.loadUrl(getArguments().getString(ARG_URL_KEY));
-        mWebView.setWebViewClient(new WebViewClient() {
+        mAppCompatActivity = (AppCompatActivity) getActivity();
+        mAppCompatActivity.setSupportActionBar(mToolbar);
+        mAppCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        mAppCompatActivity.getSupportActionBar().setHomeButtonEnabled(true);
+        mAppCompatActivity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+        mAppCompatActivity.getSupportActionBar().setTitle(R.string.app_name);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().onBackPressed();
+            }
+        });
+
+        WebView webView = (WebView) rootView.findViewById(R.id.web_view);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setDisplayZoomControls(false);
+        webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        webView.loadUrl(getArguments().getString(ARG_URL_KEY));
+        webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
                 return true;
             }
         });
-        mWebView.setWebChromeClient(new WebChromeClient() {
+        webView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(WebView webview, int newProgress) {
                 if (newProgress == 100) {
                     mProgressBar.setVisibility(View.GONE);
@@ -67,7 +84,7 @@ public class JobWebViewFragment extends Fragment {
                 activity.getSupportActionBar().setSubtitle(title);
             }
         });
-        mWebView.setWebViewClient(new WebViewClient() {
+        webView.setWebViewClient(new WebViewClient() {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return false;
             }
