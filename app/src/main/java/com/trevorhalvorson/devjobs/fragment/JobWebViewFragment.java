@@ -33,8 +33,6 @@ public class JobWebViewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_job_web_view, container, false);
 
-        final Bundle extras = getActivity().getIntent().getExtras();
-
         mProgressBar =
                 (ProgressBar) rootView.findViewById(R.id.web_view_progress_bar);
         mProgressBar.setMax(100);
@@ -46,7 +44,7 @@ public class JobWebViewFragment extends Fragment {
         mWebView.getSettings().setBuiltInZoomControls(true);
         mWebView.getSettings().setDisplayZoomControls(false);
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        mWebView.loadUrl(extras.getString(getArguments().getString(ARG_URL_KEY)));
+        mWebView.loadUrl(getArguments().getString(ARG_URL_KEY));
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
