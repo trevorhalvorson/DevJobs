@@ -22,13 +22,22 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.trevorhalvorson.devjobs.R;
-import com.trevorhalvorson.devjobs.activity.JobDetailActivity;
+import com.trevorhalvorson.devjobs.model.Job;
 
 
 public class JobDetailFragment extends Fragment {
+    private static final String ARG_JOB_KEY = "job_key";
 
-    private static final String TAG = JobDetailFragment.class.getSimpleName();
-    private Bundle extras;
+
+    public static JobDetailFragment newInstance(Job job) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_JOB_KEY, job);
+
+        JobDetailFragment fragment = new JobDetailFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     private boolean webViewPref;
     private FloatingActionButton mFloatingActionButton;
     private TextView mDescriptionTextView;
@@ -36,8 +45,6 @@ public class JobDetailFragment extends Fragment {
     private AppCompatActivity mAppCompatActivity;
     private String mJobUrl;
 
-    public JobDetailFragment() {
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,31 +60,33 @@ public class JobDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         final View rootView = inflater.inflate(R.layout.fragment_job_detail, container, false);
+
+        final Job job = (Job) getArguments().getSerializable(ARG_JOB_KEY);
+
         mFloatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab);
         mToolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         mDescriptionTextView = (TextView) rootView.findViewById(R.id.description_text_view);
-
-        extras = getActivity().getIntent().getExtras();
-
         mAppCompatActivity = (AppCompatActivity) getActivity();
         mAppCompatActivity.setSupportActionBar(mToolbar);
         mAppCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mAppCompatActivity.getSupportActionBar().setHomeButtonEnabled(true);
         mAppCompatActivity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
-        mAppCompatActivity.getSupportActionBar().setTitle(extras.getString(JobDetailActivity.EXTRA_TITLE));
-        mDescriptionTextView.setText(Html.fromHtml(extras.getString(JobDetailActivity.EXTRA_DESCRIPTION)));
-        mJobUrl = extras.getString(JobDetailActivity.EXTRA_URL);
+        mAppCompatActivity.getSupportActionBar().setTitle(job.getTitle());
+        mDescriptionTextView.setText(Html.fromHtml(job.getDescription()));
+        mJobUrl = job.getUrl();
         mFloatingActionButton.setImageResource(R.drawable.ic_web);
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!webViewPref) {
                     Intent intent = new Intent(Intent.ACTION_VIEW,
-                            Uri.parse(extras.getString(JobDetailActivity.EXTRA_URL)));
+                            Uri.parse(job.getUrl()));
                     startActivity(intent);
                 } else {
-                    getFragmentManager().beginTransaction().replace(R.id.detail_fragment,
-                            new JobWebView()).addToBackStack(null).commit();
+                    Fragment jobWebViewFragment = JobWebViewFragment.newInstance(mJobUrl);
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, jobWebViewFragment)
+                            .commit();
                 }
             }
         });

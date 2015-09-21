@@ -13,22 +13,19 @@
     <string name="subtitle">Most Recent</string>
     <string name="action_restore">Restore Hidden Jobs</string>
     <string name="view_on_web">View on GitHub</string>
-    <string name="saved_jobs">Saved Jobs</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="saved_job_sb">Added to Saved Jobs</string>
     <string name="sb_action">UNDO</string>
-    <string name="hide_job_sb">Job Hidden</string>
     <string name="title_activity_settings">Settings</string>
     <string name="cb_title">Web Pages</string>
     <string name="wv_key">devJobs_pref_wv_key</string>
     <string name="wv_default">true</string>
     <string name="wv_off">Open in browser</string>
     <string name="wv_on">View within the app</string>
-    <string name="save_job">Save Job</string>
-    <string name="action_save">Save Job</string>
     <string name="share">Share</string>
     <string name="welcome">Welcome to DevJobs</string>
     <string name="home">Home</string>
     <string name="remove_saved_job">Removed from Saved Jobs</string>
     <string name="search_description">Enter job description</string>
+    <string name="no_jobs_text">No jobs found</string>
+    <string name="retrofit_error_text">Please check network connection and try again</string>
+    <string name="location">Location</string>
 </resources>

@@ -1,75 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    android:id="@+id/coordinator_layout"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".JobListFragment">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/relative_layout"
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_scrollFlags="scroll|enterAlways">
 
         <include
-            android:id="@+id/toolbar"
-            layout="@layout/toolbar"/>
+            android:id="@+id/toolbar_main"
+            layout="@layout/toolbar" />
 
+    </android.support.design.widget.AppBarLayout>
 
-        <EditText
-            android:id="@+id/location_edit_text"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/jobs_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/toolbar"
-            android:background="@color/md_blue_grey_500"
-            android:descendantFocusability="beforeDescendants"
-            android:elevation="@dimen/appbar_elevation"
-            android:hint="@string/location_hint"
-            android:imeOptions="actionSearch|flagNavigateNext"
-            android:inputType="text"
-            android:maxLines="1"
-            android:padding="16dp"
-            android:visibility="gone"/>
-
-
-        <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_refresh_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/location_edit_text">
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/jobs_recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:scrollbars="vertical"/>
-
-        </android.support.v4.widget.SwipeRefreshLayout>
-
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/location_edit_text"
-            android:layout_centerHorizontal="true"
-            android:visibility="gone"/>
-
-        <ProgressBar
-            android:id="@+id/horizontal_progress_bar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:indeterminate="true"
-            android:visibility="gone"/>
-
-    </RelativeLayout>
-
+            android:scrollbars="vertical"
+            tools:context=".JobListFragment" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <include
         android:id="@+id/fab"
-        layout="@layout/fab"/>
+        layout="@layout/fab" />
 
 </android.support.design.widget.CoordinatorLayout>

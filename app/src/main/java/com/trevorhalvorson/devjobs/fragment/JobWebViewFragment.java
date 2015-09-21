@@ -12,10 +12,19 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
 import com.trevorhalvorson.devjobs.R;
-import com.trevorhalvorson.devjobs.activity.JobDetailActivity;
 
 
-public class JobWebView extends Fragment {
+public class JobWebViewFragment extends Fragment {
+    private static final String ARG_URL_KEY = "url_key";
+
+    public static JobWebViewFragment newInstance(String url) {
+        Bundle args = new Bundle();
+        args.putString(ARG_URL_KEY, url);
+
+        JobWebViewFragment fragment = new JobWebViewFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     private WebView mWebView;
     private ProgressBar mProgressBar;
@@ -37,7 +46,7 @@ public class JobWebView extends Fragment {
         mWebView.getSettings().setBuiltInZoomControls(true);
         mWebView.getSettings().setDisplayZoomControls(false);
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        mWebView.loadUrl(extras.getString(JobDetailActivity.EXTRA_URL));
+        mWebView.loadUrl(extras.getString(getArguments().getString(ARG_URL_KEY)));
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {

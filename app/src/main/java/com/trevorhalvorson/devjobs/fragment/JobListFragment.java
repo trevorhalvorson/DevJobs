@@ -1,15 +1,15 @@
 package com.trevorhalvorson.devjobs.fragment;
 
 
+import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -18,9 +18,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.format.DateUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,18 +27,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.trevorhalvorson.devjobs.DividerItemDecoration;
 import com.trevorhalvorson.devjobs.GHJobsAPI;
 import com.trevorhalvorson.devjobs.R;
 import com.trevorhalvorson.devjobs.activity.SettingsActivity;
-import com.trevorhalvorson.devjobs.adapter.JobAdapter;
 import com.trevorhalvorson.devjobs.model.Job;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -47,35 +48,43 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
-public class JobListFragment extends Fragment {
+public class JobListFragment extends Fragment implements EditLocationDialog.EditLocationDialogListener {
 
     private static final String TAG = JobListFragment.class.getSimpleName();
     private static final String KEY_SAVE_STATE = "KEY_JOB_LIST";
     private static final String ENDPOINT = "https://jobs.github.com";
+    private SearchView mSearchView;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private CoordinatorLayout mCoordinatorLayout;
     private Toolbar mToolbar;
+    private DrawerLayout mDrawerLayout;
     private RecyclerView mRecyclerView;
     private ArrayList<Job> mJobArrayList;
-    private ArrayList<String> mHiddenJobList;
-    private JobAdapter mJobAdapter;
-    private FloatingActionButton mFloatingActionButton;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private Adapter mJobAdapter;
     private String mJobDescriptionString;
-    private String mLocationString;
-    private EditText mLocationEditText;
-    private Job mSwipedJob;
-    private AppCompatActivity mAppCompatActivity;
-    private DrawerLayout mDrawerLayout;
-    private SharedPreferences mSharedPreferences;
-    private ProgressBar mHorizontalProgressBar;
-    private ProgressBar mProgressBar;
+    private String mLocationString = "";
     private GHJobsAPI mAPI;
-    private RestAdapter mRestAdapter;
     private int mPageCount;
     private LinearLayoutManager mLayoutManager;
-    private SearchView mSearchView;
+    private Callbacks mCallbacks;
 
-    public JobListFragment() {
+    /**
+     * Required interface for hosting activities.
+     */
+    public interface Callbacks {
+        void onJobSelected(Job job);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mCallbacks = (Callbacks) activity;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
     }
 
     @Override
@@ -83,21 +92,10 @@ public class JobListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         setRetainInstance(true);
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mRestAdapter = new RestAdapter.Builder()
+        RestAdapter mRestAdapter = new RestAdapter.Builder()
                 .setEndpoint(ENDPOINT)
                 .build();
         mAPI = mRestAdapter.create(GHJobsAPI.class);
-        mHiddenJobList = new ArrayList<>();
-
-        for (int i = 0; ; ++i) {
-            final String hiddenId = mSharedPreferences.getString("hidden_id" + String.valueOf(i), "");
-            if (!hiddenId.equals("")) {
-                mHiddenJobList.add(i, hiddenId);
-            } else {
-                break;
-            }
-        }
     }
 
     @Override
@@ -107,35 +105,21 @@ public class JobListFragment extends Fragment {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.clear();
-        for (int i = 0; i < mHiddenJobList.size(); ++i) {
-            editor.putString("hidden_id" + String.valueOf(i), mHiddenJobList.get(i));
-        }
-        editor.apply();
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View rootView = inflater.inflate(R.layout.fragment_job_list, container, false);
 
+        mToolbar = (Toolbar) rootView.findViewById(R.id.toolbar_main);
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        activity.setSupportActionBar(mToolbar);
 
-        mToolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         mCoordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.coordinator_layout);
-        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.jobs_recycler_view);
-        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
-        mFloatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab);
-        mHorizontalProgressBar = (ProgressBar) rootView.findViewById(R.id.horizontal_progress_bar);
-        mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
 
-        setupToolBar();
-        setupRecyclerView();
-        setUpSwipeRefresh();
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.jobs_recycler_view);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
 
         mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
         NavigationView navigationView = (NavigationView) getActivity().findViewById(R.id.nav_view);
@@ -143,27 +127,25 @@ public class JobListFragment extends Fragment {
             setNavigationDrawer(navigationView);
         }
 
-        mLocationEditText = (EditText) rootView.findViewById(R.id.location_edit_text);
-        mLocationEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setColorSchemeColors(
+                getResources().getColor(R.color.md_blue_grey_700));
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    mLocationEditText.clearFocus();
-                    getTextDoSearch();
-                }
-                return false;
+            public void onRefresh() {
+                getTextDoSearch();
             }
         });
 
-        mFloatingActionButton.setImageResource(R.drawable.ic_search);
-        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        fab.setImageResource(R.drawable.ic_save_white_24dp);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSearchView.onActionViewExpanded();
-                mSearchView.requestFocus();
-                mSearchView.setIconified(false);
+                Log.i(TAG, "onClick ");
             }
         });
+
 
         //Handle orientation change
         if (savedInstanceState != null && mJobArrayList.size() != 0) {
@@ -171,25 +153,83 @@ public class JobListFragment extends Fragment {
             updateDisplay(mJobArrayList);
         } else {
             mJobArrayList = new ArrayList<>();
-            mRecyclerView.setVisibility(View.GONE);
-            mSwipeRefreshLayout.setVisibility(View.GONE);
         }
 
         return rootView;
     }
 
-    private void setupToolBar() {
-        mToolbar.setTitle(getString(R.string.app_name));
-        mAppCompatActivity = (AppCompatActivity) getActivity();
-        mAppCompatActivity.setSupportActionBar(mToolbar);
-        mAppCompatActivity.getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
-        mAppCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    private class Holder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private Job mJob;
+        private TextView jobTitle, jobCompany, jobLocation, jobDate;
+
+        public Holder(View itemView) {
+            super(itemView);
+            itemView.setOnClickListener(this);
+
+            jobTitle = (TextView) itemView.findViewById(R.id.jobTitleTextView);
+            jobCompany = (TextView) itemView.findViewById(R.id.jobCompanyTextView);
+            jobLocation = (TextView) itemView.findViewById(R.id.jobLocationTextView);
+            jobDate = (TextView) itemView.findViewById(R.id.jobDateTextView);
+        }
+
+        public void bindJob(Job job) {
+            mJob = job;
+            jobTitle.setText(mJob.getTitle());
+            jobCompany.setText(mJob.getCompany());
+            jobLocation.setText(mJob.getLocation());
+            jobDate.setText(getDateSpan(mJob.getCreated_at()).toString());
+        }
+
+        @Override
+        public void onClick(View v) {
+            mCallbacks.onJobSelected(mJob);
+        }
     }
 
-    private void setupRecyclerView() {
-        mLayoutManager = new LinearLayoutManager(mAppCompatActivity);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(mAppCompatActivity, LinearLayoutManager.VERTICAL));
+    private class Adapter extends RecyclerView.Adapter<Holder> {
+
+        private ArrayList<Job> mJobs = new ArrayList<>();
+
+        public Adapter(ArrayList<Job> jobs) {
+            mJobs = jobs;
+        }
+
+        @Override
+        public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(getActivity());
+            View view = inflater.inflate(R.layout.list_item_job, parent, false);
+            return new Holder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(Holder holder, int position) {
+            Job job = mJobs.get(position);
+            holder.bindJob(job);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mJobs.size();
+        }
+    }
+
+    private CharSequence getDateSpan(String dateCreatedAtStr) {
+        final DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy", Locale.ENGLISH);
+        final Date date;
+        try {
+            date = dateFormat.parse(dateCreatedAtStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+        if (date.after(new Date())) {
+            return getActivity().getString(R.string.just_posted);
+        }
+        return DateUtils.getRelativeTimeSpanString(date.getTime());
+    }
+
+    private void setupScrollListenerRecyclerView() {
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -206,20 +246,13 @@ public class JobListFragment extends Fragment {
 
                     // Check if a full page of jobs was retrieved
                     if (mJobArrayList.size() % 50 == 0 && mJobArrayList.size() != 0) {
-
-                        mHorizontalProgressBar.setVisibility(View.VISIBLE);
                         mPageCount++;
-                        mAPI.getGHJobs(Integer.toString(mPageCount), mSearchView.getQuery().toString(), mLocationString, new Callback<ArrayList<Job>>() {
+                        mAPI.getGHJobs(Integer.toString(mPageCount), mSearchView.getQuery().toString(), "" /*mLocationString*/, new Callback<ArrayList<Job>>() {
                             @Override
                             public void success(ArrayList<Job> jobs, Response response) {
                                 Log.d(TAG, "Response URL: " + response.getUrl());
-                                for (int i = 0; i < jobs.size(); i++) {
-                                    if (!mHiddenJobList.contains(jobs.get(i).getId())) {
-                                        mJobArrayList.add(jobs.get(i));
-                                    }
-                                }
-                                mHorizontalProgressBar.setVisibility(View.GONE);
-                                mJobAdapter = new JobAdapter(getActivity(), mJobArrayList);
+                                mJobArrayList.addAll(jobs);
+                                mJobAdapter = new Adapter(mJobArrayList);
                                 mJobAdapter.notifyDataSetChanged();
                                 recyclerView.setAdapter(mJobAdapter);
                                 recyclerView.scrollToPosition(pos);
@@ -227,52 +260,12 @@ public class JobListFragment extends Fragment {
 
                             @Override
                             public void failure(RetrofitError error) {
-                                Snackbar.make(mCoordinatorLayout, "Please check network connection and try again", Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(mCoordinatorLayout, R.string.retrofit_error_text, Snackbar.LENGTH_LONG).show();
                             }
 
                         });
                     }
                 }
-            }
-        });
-
-        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
-                final int pos = viewHolder.getAdapterPosition();
-                mSwipedJob = mJobArrayList.get(pos);
-                mHiddenJobList.add(mJobArrayList.get(viewHolder.getAdapterPosition()).getId());
-                Snackbar.make(mCoordinatorLayout, R.string.hide_job_sb, Snackbar.LENGTH_LONG).setAction(R.string.sb_action, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        mHiddenJobList.remove(mHiddenJobList.size() - 1);
-                        mJobArrayList.add(pos, mSwipedJob);
-                        mJobAdapter.notifyItemInserted(pos);
-                        mRecyclerView.scrollToPosition(pos);
-                    }
-                }).show();
-                mJobArrayList.remove(pos);
-                mJobAdapter.notifyItemRemoved(pos);
-            }
-        };
-
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
-        itemTouchHelper.attachToRecyclerView(mRecyclerView);
-    }
-
-    private void setUpSwipeRefresh() {
-        mSwipeRefreshLayout.setColorSchemeColors(
-                getResources().getColor(R.color.md_blue_grey_700));
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                getTextDoSearch();
             }
         });
     }
@@ -286,8 +279,6 @@ public class JobListFragment extends Fragment {
                         switch (menuItem.getItemId()) {
                             case R.id.nav_home:
                                 mToolbar.setTitle(R.string.app_name);
-                                mLocationEditText.setVisibility(View.VISIBLE);
-                                mFloatingActionButton.setVisibility(View.VISIBLE);
                                 mSwipeRefreshLayout.setEnabled(true);
                                 getTextDoSearch();
                                 menuItem.setChecked(true);
@@ -312,35 +303,26 @@ public class JobListFragment extends Fragment {
         if (!mJobArrayList.isEmpty()) {
             mJobArrayList.clear();
         }
-        mLocationString = mLocationEditText.getText().toString();
-        mJobDescriptionString = mSearchView.getQuery().toString();
-        mSwipeRefreshLayout.setVisibility(View.VISIBLE);
-        if (!mSwipeRefreshLayout.isRefreshing()) {
-            mProgressBar.setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.INVISIBLE);
-        }
         searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
     }
 
     public void searchJobTask(String page, String search, String location) {
         mRecyclerView.stopScroll();
         mPageCount = 0;
+        Log.i(TAG, "searchJobTask ");
 
         mAPI.getGHJobs(page, search, location, new Callback<ArrayList<Job>>() {
             @Override
             public void success(ArrayList<Job> jobs, Response response) {
-                Log.i(TAG, "Response URL: " + response.getUrl());
-                for (int i = 0; i < jobs.size(); i++) {
-                    if (!mHiddenJobList.contains(jobs.get(i).getId())) {
-                        mJobArrayList.add(jobs.get(i));
-                    }
-                }
+                Log.i(TAG, "success ");
+                mJobArrayList.addAll(jobs);
                 updateDisplay(mJobArrayList);
             }
 
             @Override
             public void failure(RetrofitError error) {
-                Snackbar.make(mCoordinatorLayout, "Please check network connection and try again", Snackbar.LENGTH_LONG).show();
+                Log.e(TAG, "failure " + error);
+                Snackbar.make(mCoordinatorLayout, R.string.retrofit_error_text, Snackbar.LENGTH_LONG).show();
                 updateDisplay(mJobArrayList);
             }
         });
@@ -348,18 +330,15 @@ public class JobListFragment extends Fragment {
     }
 
     private void updateDisplay(final ArrayList<Job> jobs) {
-
         if (!jobs.isEmpty()) {
-            mLocationEditText.setVisibility(View.GONE);
-            mJobAdapter = new JobAdapter(mAppCompatActivity, jobs);
-            mRecyclerView.setLayoutManager(mLayoutManager);
+            Log.i(TAG, "updateDisplay ");
+            mJobAdapter = new Adapter(jobs);
             mRecyclerView.setAdapter(mJobAdapter);
+            //setupScrollListenerRecyclerView();
         } else {
-            Snackbar.make(mCoordinatorLayout, "No jobs found", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(mCoordinatorLayout, R.string.no_jobs_text, Snackbar.LENGTH_LONG).show();
         }
 
-        mRecyclerView.setVisibility(View.VISIBLE);
-        mProgressBar.setVisibility(View.INVISIBLE);
         mSwipeRefreshLayout.setRefreshing(false);
 
     }
@@ -370,27 +349,14 @@ public class JobListFragment extends Fragment {
 
         final MenuItem searchItem = menu.findItem(R.id.menu_item_search);
         mSearchView = (SearchView) searchItem.getActionView();
-        mSearchView.setQueryHint(mAppCompatActivity.getString(R.string.search_description));
-        mSearchView.setImeOptions(EditorInfo.IME_ACTION_NEXT);
-        mSearchView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                mLocationEditText.setVisibility(View.VISIBLE);
-            }
-        });
-        mSearchView.setOnSearchClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mLocationEditText.setVisibility(View.VISIBLE);
-            }
-        });
-
+        mSearchView.setQueryHint(getActivity().getString(R.string.search_description));
+        mSearchView.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Log.i(TAG, "Search view submit");
+                mSearchView.clearFocus();
                 mJobDescriptionString = query;
-                mLocationEditText.requestFocus();
+                searchJobTask("0", mJobDescriptionString, mLocationString);
                 return true;
             }
 
@@ -406,9 +372,10 @@ public class JobListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_restore_jobs:
-                mHiddenJobList.clear();
-                getTextDoSearch();
+            case R.id.action_set_location:
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                EditLocationDialog dialog = new EditLocationDialog();
+                dialog.show(fm, "fragment_edit_location");
                 return true;
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
@@ -416,5 +383,10 @@ public class JobListFragment extends Fragment {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onFinishEditDialog(String inputText) {
+        mLocationString = inputText;
     }
 }
