@@ -128,6 +128,7 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
         mToolbar = (Toolbar) rootView.findViewById(R.id.toolbar_main);
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         activity.setSupportActionBar(mToolbar);
+        mToolbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_menu_white_24dp));
 
         mCoordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.coordinator_layout);
 
@@ -148,7 +149,7 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getTextDoSearch();
+                clearJobsStartSearchTask();
             }
         });
 
@@ -249,6 +250,50 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
         return DateUtils.getRelativeTimeSpanString(date.getTime());
     }
 
+    private void clearJobsStartSearchTask() {
+        if (!mJobArrayList.isEmpty()) {
+            mJobArrayList.clear();
+        }
+        searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
+    }
+
+    public void searchJobTask(String page, String search, String location) {
+        mRecyclerView.stopScroll();
+        mPageCount = 0;
+        Log.i(TAG, "searchJobTask ");
+
+        mAPI.getGHJobs(page, search, location, new Callback<ArrayList<Job>>() {
+            @Override
+            public void success(ArrayList<Job> jobs, Response response) {
+                Log.i(TAG, "success ");
+                mJobArrayList.addAll(jobs);
+                updateDisplay(mJobArrayList);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.e(TAG, "failure " + error);
+                Snackbar.make(mCoordinatorLayout, R.string.retrofit_error_text, Snackbar.LENGTH_LONG).show();
+                updateDisplay(mJobArrayList);
+            }
+        });
+
+    }
+
+    private void updateDisplay(final ArrayList<Job> jobs) {
+        if (!jobs.isEmpty()) {
+            Log.i(TAG, "updateDisplay ");
+            mJobAdapter = new Adapter(jobs);
+            mRecyclerView.setAdapter(mJobAdapter);
+            setupScrollListenerRecyclerView();
+        } else {
+            Snackbar.make(mCoordinatorLayout, R.string.no_jobs_text, Snackbar.LENGTH_LONG).show();
+        }
+
+        mSwipeRefreshLayout.setRefreshing(false);
+
+    }
+
     private void setupScrollListenerRecyclerView() {
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -300,7 +345,7 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
                             case R.id.nav_home:
                                 mToolbar.setTitle(R.string.app_name);
                                 mSwipeRefreshLayout.setEnabled(true);
-                                getTextDoSearch();
+                                clearJobsStartSearchTask();
                                 menuItem.setChecked(true);
                                 mDrawerLayout.closeDrawers();
                                 return true;
@@ -319,50 +364,6 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
                 });
     }
 
-    private void getTextDoSearch() {
-        if (!mJobArrayList.isEmpty()) {
-            mJobArrayList.clear();
-        }
-        searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
-    }
-
-    public void searchJobTask(String page, String search, String location) {
-        mRecyclerView.stopScroll();
-        mPageCount = 0;
-        Log.i(TAG, "searchJobTask ");
-
-        mAPI.getGHJobs(page, search, location, new Callback<ArrayList<Job>>() {
-            @Override
-            public void success(ArrayList<Job> jobs, Response response) {
-                Log.i(TAG, "success ");
-                mJobArrayList.addAll(jobs);
-                updateDisplay(mJobArrayList);
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.e(TAG, "failure " + error);
-                Snackbar.make(mCoordinatorLayout, R.string.retrofit_error_text, Snackbar.LENGTH_LONG).show();
-                updateDisplay(mJobArrayList);
-            }
-        });
-
-    }
-
-    private void updateDisplay(final ArrayList<Job> jobs) {
-        if (!jobs.isEmpty()) {
-            Log.i(TAG, "updateDisplay ");
-            mJobAdapter = new Adapter(jobs);
-            mRecyclerView.setAdapter(mJobAdapter);
-            setupScrollListenerRecyclerView();
-        } else {
-            Snackbar.make(mCoordinatorLayout, R.string.no_jobs_text, Snackbar.LENGTH_LONG).show();
-        }
-
-        mSwipeRefreshLayout.setRefreshing(false);
-
-    }
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
@@ -376,7 +377,7 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
             public boolean onQueryTextSubmit(String query) {
                 mSearchView.clearFocus();
                 mJobDescriptionString = query;
-                searchJobTask("0", mJobDescriptionString, mLocationString);
+                clearJobsStartSearchTask();
                 return true;
             }
 

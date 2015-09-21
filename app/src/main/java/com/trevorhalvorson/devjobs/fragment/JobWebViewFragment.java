@@ -27,27 +27,24 @@ public class JobWebViewFragment extends Fragment {
         return fragment;
     }
 
-    private Toolbar mToolbar;
-    private AppCompatActivity mAppCompatActivity;
     private ProgressBar mProgressBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_job_web_view, container, false);
 
-        mToolbar = (Toolbar) rootView.findViewById(R.id.web_toolbar);
+        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.web_toolbar);
 
-        mProgressBar =
-                (ProgressBar) rootView.findViewById(R.id.web_view_progress_bar);
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.web_view_progress_bar);
         mProgressBar.setMax(100);
 
-        mAppCompatActivity = (AppCompatActivity) getActivity();
-        mAppCompatActivity.setSupportActionBar(mToolbar);
-        mAppCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        mAppCompatActivity.getSupportActionBar().setHomeButtonEnabled(true);
-        mAppCompatActivity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
-        mAppCompatActivity.getSupportActionBar().setTitle(R.string.app_name);
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        activity.setSupportActionBar(toolbar);
+        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        activity.getSupportActionBar().setHomeButtonEnabled(true);
+        activity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+        activity.getSupportActionBar().setTitle(R.string.app_name);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getActivity().onBackPressed();

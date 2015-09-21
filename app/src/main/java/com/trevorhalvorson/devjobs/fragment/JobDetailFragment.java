@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -57,9 +56,9 @@ public class JobDetailFragment extends Fragment {
 
         final View rootView = inflater.inflate(R.layout.fragment_job_detail, container, false);
 
-        final Job job = (Job) getArguments().getSerializable(ARG_JOB_KEY);
+        Job job = (Job) getArguments().getSerializable(ARG_JOB_KEY);
+        mJobUrl = job.getUrl();
 
-        FloatingActionButton floatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab);
         Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.detail_toolbar);
         TextView descriptionTextView = (TextView) rootView.findViewById(R.id.description_text_view);
         mAppCompatActivity = (AppCompatActivity) getActivity();
@@ -76,25 +75,6 @@ public class JobDetailFragment extends Fragment {
         });
 
         descriptionTextView.setText(Html.fromHtml(job.getDescription()));
-        mJobUrl = job.getUrl();
-        floatingActionButton.setImageResource(R.drawable.ic_web);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!mWebViewPref) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW,
-                            Uri.parse(job.getUrl()));
-                    startActivity(intent);
-                } else {
-                    Fragment jobWebViewFragment = JobWebViewFragment.newInstance(mJobUrl);
-                    getActivity().getSupportFragmentManager()
-                            .beginTransaction()
-                            .addToBackStack(null)
-                            .replace(R.id.fragment_container, jobWebViewFragment)
-                            .commit();
-                }
-            }
-        });
 
         return rootView;
     }
@@ -121,8 +101,23 @@ public class JobDetailFragment extends Fragment {
                     getActivity().onBackPressed();
                 }
                 return true;
+            case R.id.menu_item_web:
+                if (!mWebViewPref) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse(mJobUrl));
+                    startActivity(intent);
+                } else {
+                    Fragment jobWebViewFragment = JobWebViewFragment.newInstance(mJobUrl);
+                    getActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .addToBackStack(null)
+                            .replace(R.id.fragment_container, jobWebViewFragment)
+                            .commit();
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     private Intent shareIntent() {
