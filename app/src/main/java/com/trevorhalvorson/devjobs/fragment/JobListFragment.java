@@ -2,6 +2,7 @@ package com.trevorhalvorson.devjobs.fragment;
 
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -116,12 +117,19 @@ public class JobListFragment extends StatedFragment
     public void onPause() {
         super.onPause();
         SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.clear();
         for (int i = 0; i < mSavedSearches.size(); i++) {
             editor.putString(String.valueOf(i), mSavedSearches.get(i));
         }
         editor.putInt("saved_searches_size", mSavedSearches.size());
         editor.apply();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mDrawerLayout != null) {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        }
     }
 
     @Override
@@ -268,7 +276,8 @@ public class JobListFragment extends StatedFragment
     }
 
     private CharSequence getDateSpan(String dateCreatedAtStr) {
-        final DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy", Locale.ENGLISH);
+        final DateFormat dateFormat =
+                new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy", Locale.ENGLISH);
         final Date date;
         try {
             date = dateFormat.parse(dateCreatedAtStr);
@@ -347,24 +356,27 @@ public class JobListFragment extends StatedFragment
                         mProgressBar.setVisibility(View.VISIBLE);
 
                         mPageCount++;
-                        mAPI.getGHJobs(Integer.toString(mPageCount), mSearchView.getQuery().toString(), mLocationString, new Callback<ArrayList<Job>>() {
-                            @Override
-                            public void success(ArrayList<Job> jobs, Response response) {
-                                mJobArrayList.addAll(jobs);
-                                mJobAdapter = new Adapter(mJobArrayList);
-                                mJobAdapter.notifyDataSetChanged();
-                                recyclerView.setAdapter(mJobAdapter);
-                                recyclerView.scrollToPosition(pos);
-                                mProgressBar.setVisibility(View.GONE);
-                            }
+                        mAPI.getGHJobs(Integer.toString(mPageCount),
+                                mSearchView.getQuery().toString(),
+                                mLocationString,
+                                new Callback<ArrayList<Job>>() {
+                                    @Override
+                                    public void success(ArrayList<Job> jobs, Response response) {
+                                        mJobArrayList.addAll(jobs);
+                                        mJobAdapter = new Adapter(mJobArrayList);
+                                        mJobAdapter.notifyDataSetChanged();
+                                        recyclerView.setAdapter(mJobAdapter);
+                                        recyclerView.scrollToPosition(pos);
+                                        mProgressBar.setVisibility(View.GONE);
+                                    }
 
-                            @Override
-                            public void failure(RetrofitError error) {
-                                showSnackbar(getString(R.string.retrofit_error_text));
-                                mProgressBar.setVisibility(View.GONE);
-                            }
+                                    @Override
+                                    public void failure(RetrofitError error) {
+                                        showSnackbar(getString(R.string.retrofit_error_text));
+                                        mProgressBar.setVisibility(View.GONE);
+                                    }
 
-                        });
+                                });
                     }
                 }
             }
@@ -380,24 +392,22 @@ public class JobListFragment extends StatedFragment
                         switch (menuItem.getItemId()) {
                             case R.id.nav_home:
                                 mToolbar.setTitle(R.string.app_name);
-                                menuItem.setChecked(true);
                                 mDrawerLayout.closeDrawers();
                                 mRecyclerView.smoothScrollToPosition(0);
                                 return true;
                             case R.id.nav_searches:
                                 FragmentManager fm = getActivity().getSupportFragmentManager();
-                                SavedSearchesDialog dialog = SavedSearchesDialog.newInstance(mSavedSearches);
+                                SavedSearchesDialog dialog =
+                                        SavedSearchesDialog.newInstance(mSavedSearches);
                                 dialog.show(fm, "fragment_saved_searches");
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             case R.id.settings:
-                                SettingsFragment settingsFragment = SettingsFragment.newInstance();
-                                getActivity().getSupportFragmentManager()
-                                        .beginTransaction()
-                                        .addToBackStack(null)
-                                        .replace(R.id.fragment_container, settingsFragment)
-                                        .commit();
-                                menuItem.setChecked(true);
+                                Intent intent = new Intent();
+                                intent.setClassName(getContext(),
+                                        "com.trevorhalvorson.devjobs.activity.SettingsPreferenceActivity");
+                                startActivity(intent);
+                                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             default:

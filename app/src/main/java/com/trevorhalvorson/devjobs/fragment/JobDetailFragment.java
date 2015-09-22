@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,7 +39,7 @@ public class JobDetailFragment extends Fragment {
     }
 
     private boolean mWebViewPref;
-    private AppCompatActivity mAppCompatActivity;
+    private AppCompatActivity mActivity;
     private String mJobUrl;
 
     @Override
@@ -48,6 +49,7 @@ public class JobDetailFragment extends Fragment {
         setHasOptionsMenu(true);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         mWebViewPref = prefs.getBoolean(getString(R.string.wv_key), true);
+        Log.i("TAG", "onCreate " + mWebViewPref);
     }
 
     @Override
@@ -61,12 +63,12 @@ public class JobDetailFragment extends Fragment {
 
         Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.detail_toolbar);
         TextView descriptionTextView = (TextView) rootView.findViewById(R.id.description_text_view);
-        mAppCompatActivity = (AppCompatActivity) getActivity();
-        mAppCompatActivity.setSupportActionBar(toolbar);
-        mAppCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        mAppCompatActivity.getSupportActionBar().setHomeButtonEnabled(true);
-        mAppCompatActivity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
-        mAppCompatActivity.getSupportActionBar().setTitle(job.getTitle());
+        mActivity = (AppCompatActivity) getActivity();
+        mActivity.setSupportActionBar(toolbar);
+        mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        mActivity.getSupportActionBar().setHomeButtonEnabled(true);
+        mActivity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+        mActivity.getSupportActionBar().setTitle(job.getTitle());
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -95,8 +97,8 @@ public class JobDetailFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (mAppCompatActivity.getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                    mAppCompatActivity.getSupportFragmentManager().popBackStack();
+                if (mActivity.getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    mActivity.getSupportFragmentManager().popBackStack();
                 } else {
                     getActivity().onBackPressed();
                 }
