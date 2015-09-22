@@ -33,6 +33,25 @@
             tools:context=".JobListFragment" />
     </android.support.v4.widget.SwipeRefreshLayout>
 
+    <ProgressBar
+        android:id="@+id/job_list_progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:indeterminate="true"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/job_list_progress_bar_margin"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/abc_action_bar_default_height_material"
+        android:background="?attr/colorPrimary"
+        android:indeterminate="true"
+        android:visibility="gone" />
+
     <include
         android:id="@+id/fab"
         layout="@layout/fab" />

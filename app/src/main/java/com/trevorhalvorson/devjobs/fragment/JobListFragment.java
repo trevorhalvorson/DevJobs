@@ -2,7 +2,6 @@ package com.trevorhalvorson.devjobs.fragment;
 
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -27,13 +26,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFragment;
 import com.trevorhalvorson.devjobs.DividerItemDecoration;
 import com.trevorhalvorson.devjobs.GHJobsAPI;
 import com.trevorhalvorson.devjobs.R;
-import com.trevorhalvorson.devjobs.activity.SettingsActivity;
 import com.trevorhalvorson.devjobs.model.Job;
 
 import java.text.DateFormat;
@@ -59,6 +58,7 @@ public class JobListFragment extends StatedFragment
     private SearchView mSearchView;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private CoordinatorLayout mCoordinatorLayout;
+    private ProgressBar mProgressBarMargin, mProgressBar;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
     private RecyclerView mRecyclerView;
@@ -159,6 +159,9 @@ public class JobListFragment extends StatedFragment
         mToolbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_menu_white_24dp));
 
         mCoordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.coordinator_layout);
+
+        mProgressBarMargin = (ProgressBar) rootView.findViewById(R.id.job_list_progress_bar_margin);
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.job_list_progress_bar);
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.jobs_recycler_view);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
@@ -287,6 +290,10 @@ public class JobListFragment extends StatedFragment
     }
 
     public void searchJobTask(String page, String search, String location) {
+        if (!mSwipeRefreshLayout.isRefreshing()) {
+            mProgressBarMargin.setVisibility(View.VISIBLE);
+        }
+
         mRecyclerView.stopScroll();
         mPageCount = 0;
 
@@ -299,7 +306,7 @@ public class JobListFragment extends StatedFragment
 
             @Override
             public void failure(RetrofitError error) {
-                showSnackbar(error.getMessage());
+                showSnackbar(getString(R.string.retrofit_error_text));
                 updateDisplay(mJobArrayList);
             }
         });
@@ -315,6 +322,7 @@ public class JobListFragment extends StatedFragment
             showSnackbar(getString(R.string.no_jobs_text));
         }
 
+        mProgressBarMargin.setVisibility(View.GONE);
         mSwipeRefreshLayout.setRefreshing(false);
 
     }
@@ -336,6 +344,8 @@ public class JobListFragment extends StatedFragment
 
                     // Check if a full page of jobs was retrieved
                     if (mJobArrayList.size() % 50 == 0 && mJobArrayList.size() != 0) {
+                        mProgressBar.setVisibility(View.VISIBLE);
+
                         mPageCount++;
                         mAPI.getGHJobs(Integer.toString(mPageCount), mSearchView.getQuery().toString(), mLocationString, new Callback<ArrayList<Job>>() {
                             @Override
@@ -345,11 +355,13 @@ public class JobListFragment extends StatedFragment
                                 mJobAdapter.notifyDataSetChanged();
                                 recyclerView.setAdapter(mJobAdapter);
                                 recyclerView.scrollToPosition(pos);
+                                mProgressBar.setVisibility(View.GONE);
                             }
 
                             @Override
                             public void failure(RetrofitError error) {
-                                showSnackbar(error.getMessage());
+                                showSnackbar(getString(R.string.retrofit_error_text));
+                                mProgressBar.setVisibility(View.GONE);
                             }
 
                         });
@@ -368,11 +380,9 @@ public class JobListFragment extends StatedFragment
                         switch (menuItem.getItemId()) {
                             case R.id.nav_home:
                                 mToolbar.setTitle(R.string.app_name);
-                                mSwipeRefreshLayout.setEnabled(true);
-                                clearJobs();
-                                searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
                                 menuItem.setChecked(true);
                                 mDrawerLayout.closeDrawers();
+                                mRecyclerView.smoothScrollToPosition(0);
                                 return true;
                             case R.id.nav_searches:
                                 FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -381,8 +391,12 @@ public class JobListFragment extends StatedFragment
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             case R.id.settings:
-                                Intent intent = new Intent(getActivity(), SettingsActivity.class);
-                                startActivity(intent);
+                                SettingsFragment settingsFragment = SettingsFragment.newInstance();
+                                getActivity().getSupportFragmentManager()
+                                        .beginTransaction()
+                                        .addToBackStack(null)
+                                        .replace(R.id.fragment_container, settingsFragment)
+                                        .commit();
                                 menuItem.setChecked(true);
                                 mDrawerLayout.closeDrawers();
                                 return true;

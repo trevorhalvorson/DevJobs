@@ -46,7 +46,7 @@ public class JobDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         mWebViewPref = prefs.getBoolean(getString(R.string.wv_key), true);
     }
 
