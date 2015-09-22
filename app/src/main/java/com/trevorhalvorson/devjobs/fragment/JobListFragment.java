@@ -20,7 +20,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -174,7 +173,7 @@ public class JobListFragment extends StatedFragment
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
         mSwipeRefreshLayout.setColorSchemeColors(
-                getResources().getColor(R.color.md_blue_grey_700));
+                getResources().getColor(R.color.primary_dark));
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -290,7 +289,6 @@ public class JobListFragment extends StatedFragment
     public void searchJobTask(String page, String search, String location) {
         mRecyclerView.stopScroll();
         mPageCount = 0;
-        Log.i(TAG, "searchJobTask ");
 
         mAPI.getGHJobs(page, search, location, new Callback<ArrayList<Job>>() {
             @Override

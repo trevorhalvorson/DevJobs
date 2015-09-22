@@ -14,7 +14,7 @@ import retrofit.http.Query;
 public interface GHJobsAPI {
 
     @GET("/positions.json")
-    public void getGHJobs(@Query("page") String page,
+    void getGHJobs(@Query("page") String page,
                           @Query("description") String desc,
                           @Query("location") String loc,
                           Callback<ArrayList<Job>> response);

@@ -1,12 +1,9 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="Theme.DesignDemo" parent="Base.Theme.DesignDemo"></style>
-
-    <style name="Base.Theme.DesignDemo" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/md_blue_grey_500</item>
-        <item name="colorPrimaryDark">@color/md_blue_grey_700</item>
-        <item name="colorAccent">@color/md_cyan_200</item>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
     </style>

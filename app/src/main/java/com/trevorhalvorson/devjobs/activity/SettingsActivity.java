@@ -12,13 +12,11 @@ import com.trevorhalvorson.devjobs.R;
  */
 public class SettingsActivity extends AppCompatActivity {
 
-    private Toolbar mToolbar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        mToolbar = (Toolbar) findViewById(R.id.settingsToolbar);
+        Toolbar mToolbar = (Toolbar) findViewById(R.id.settingsToolbar);
         setSupportActionBar(mToolbar);
         if (mToolbar != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
