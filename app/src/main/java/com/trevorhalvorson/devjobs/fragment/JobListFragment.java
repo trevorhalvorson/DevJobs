@@ -131,7 +131,9 @@ public class JobListFragment extends StatedFragment
         setHasOptionsMenu(true);
         setRetainInstance(true);
 
+        EditLocationDialog.setListener(this);
         SavedSearchesDialog.setListener(this);
+
         mSavedSearches = new ArrayList<>();
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -188,18 +190,11 @@ public class JobListFragment extends StatedFragment
             public void onClick(View v) {
                 if (!mJobDescriptionString.equals("") && !mSavedSearches.contains(mJobDescriptionString)) {
                     mSavedSearches.add(mJobDescriptionString);
-                    Snackbar.make(mCoordinatorLayout,
-                            "\"" + mJobDescriptionString + "\"" + " added to saved searches.",
-                            Snackbar.LENGTH_LONG)
-                            .show();
+                    showSnackbar("\"" + mJobDescriptionString + "\"" + " added to saved searches.");
                 } else if (mSavedSearches.contains(mJobDescriptionString)) {
-                    Snackbar.make(mCoordinatorLayout,
-                            "\"" + mJobDescriptionString + "\"" + " already added to saved searches.",
-                            Snackbar.LENGTH_LONG)
-                            .show();
+                    showSnackbar("\"" + mJobDescriptionString + "\"" + " already added to saved searches.");
                 } else {
-                    Snackbar.make(mCoordinatorLayout, R.string.empty_search_text, Snackbar.LENGTH_LONG)
-                            .show();
+                    showSnackbar(getString(R.string.empty_search_text));
                 }
             }
         });
@@ -300,15 +295,13 @@ public class JobListFragment extends StatedFragment
         mAPI.getGHJobs(page, search, location, new Callback<ArrayList<Job>>() {
             @Override
             public void success(ArrayList<Job> jobs, Response response) {
-                Log.i(TAG, "success ");
                 mJobArrayList.addAll(jobs);
                 updateDisplay(mJobArrayList);
             }
 
             @Override
             public void failure(RetrofitError error) {
-                Log.e(TAG, "failure " + error);
-                Snackbar.make(mCoordinatorLayout, R.string.retrofit_error_text, Snackbar.LENGTH_LONG).show();
+                showSnackbar(error.getMessage());
                 updateDisplay(mJobArrayList);
             }
         });
@@ -317,12 +310,11 @@ public class JobListFragment extends StatedFragment
 
     private void updateDisplay(final ArrayList<Job> jobs) {
         if (!jobs.isEmpty()) {
-            Log.i(TAG, "updateDisplay ");
             mJobAdapter = new Adapter(jobs);
             mRecyclerView.setAdapter(mJobAdapter);
             setupScrollListenerRecyclerView();
         } else {
-            Snackbar.make(mCoordinatorLayout, R.string.no_jobs_text, Snackbar.LENGTH_LONG).show();
+            showSnackbar(getString(R.string.no_jobs_text));
         }
 
         mSwipeRefreshLayout.setRefreshing(false);
@@ -347,10 +339,9 @@ public class JobListFragment extends StatedFragment
                     // Check if a full page of jobs was retrieved
                     if (mJobArrayList.size() % 50 == 0 && mJobArrayList.size() != 0) {
                         mPageCount++;
-                        mAPI.getGHJobs(Integer.toString(mPageCount), mSearchView.getQuery().toString(), "" /*mLocationString*/, new Callback<ArrayList<Job>>() {
+                        mAPI.getGHJobs(Integer.toString(mPageCount), mSearchView.getQuery().toString(), mLocationString, new Callback<ArrayList<Job>>() {
                             @Override
                             public void success(ArrayList<Job> jobs, Response response) {
-                                Log.d(TAG, "Response URL: " + response.getUrl());
                                 mJobArrayList.addAll(jobs);
                                 mJobAdapter = new Adapter(mJobArrayList);
                                 mJobAdapter.notifyDataSetChanged();
@@ -360,7 +351,7 @@ public class JobListFragment extends StatedFragment
 
                             @Override
                             public void failure(RetrofitError error) {
-                                Snackbar.make(mCoordinatorLayout, R.string.retrofit_error_text, Snackbar.LENGTH_LONG).show();
+                                showSnackbar(error.getMessage());
                             }
 
                         });
@@ -438,7 +429,7 @@ public class JobListFragment extends StatedFragment
         switch (item.getItemId()) {
             case R.id.action_set_location:
                 FragmentManager fm = getActivity().getSupportFragmentManager();
-                EditLocationDialog dialog = new EditLocationDialog();
+                EditLocationDialog dialog = EditLocationDialog.newInstance();
                 dialog.show(fm, "fragment_edit_location");
                 return true;
             case android.R.id.home:
@@ -459,6 +450,10 @@ public class JobListFragment extends StatedFragment
     @Override
     public void onFinishEditDialog(String inputText) {
         mLocationString = inputText;
-        Log.i(TAG, "onFinishEditDialog " + mLocationString);
+        showSnackbar("Location set to \"" + mLocationString + "\"");
+    }
+
+    private void showSnackbar(String text) {
+        Snackbar.make(mCoordinatorLayout, text, Snackbar.LENGTH_LONG).show();
     }
 }
