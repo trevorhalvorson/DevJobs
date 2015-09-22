@@ -3,7 +3,9 @@ package com.trevorhalvorson.devjobs.fragment;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -48,7 +50,9 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
-public class JobListFragment extends StatedFragment implements EditLocationDialog.EditLocationDialogListener {
+public class JobListFragment extends StatedFragment
+        implements EditLocationDialog.EditLocationDialogListener,
+        SavedSearchesDialog.SavedSearchSelectedListener {
 
     private static final String TAG = JobListFragment.class.getSimpleName();
     private static final String KEY_SAVE_STATE = "KEY_JOB_LIST";
@@ -61,6 +65,7 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
     private RecyclerView mRecyclerView;
     private ArrayList<Job> mJobArrayList;
     private ArrayList<String> mSavedSearches;
+    private SharedPreferences mSharedPreferences;
     private Adapter mJobAdapter;
     private String mJobDescriptionString = "";
     private String mLocationString = "";
@@ -109,10 +114,32 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.clear();
+        for (int i = 0; i < mSavedSearches.size(); i++) {
+            editor.putString(String.valueOf(i), mSavedSearches.get(i));
+        }
+        editor.putInt("saved_searches_size", mSavedSearches.size());
+        editor.apply();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         setRetainInstance(true);
+
+        SavedSearchesDialog.setListener(this);
+        mSavedSearches = new ArrayList<>();
+
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        int savedSearchesSize = mSharedPreferences.getInt("saved_searches_size", 0);
+        for (int i = 0; i < savedSearchesSize; i++) {
+            mSavedSearches.add(i, mSharedPreferences.getString(String.valueOf(i), ""));
+        }
+
         RestAdapter mRestAdapter = new RestAdapter.Builder()
                 .setEndpoint(ENDPOINT)
                 .build();
@@ -149,7 +176,8 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                clearJobsStartSearchTask();
+                clearJobs();
+                searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
             }
         });
 
@@ -158,8 +186,17 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mJobDescriptionString.equals("")) {
+                if (!mJobDescriptionString.equals("") && !mSavedSearches.contains(mJobDescriptionString)) {
                     mSavedSearches.add(mJobDescriptionString);
+                    Snackbar.make(mCoordinatorLayout,
+                            "\"" + mJobDescriptionString + "\"" + " added to saved searches.",
+                            Snackbar.LENGTH_LONG)
+                            .show();
+                } else if (mSavedSearches.contains(mJobDescriptionString)) {
+                    Snackbar.make(mCoordinatorLayout,
+                            "\"" + mJobDescriptionString + "\"" + " already added to saved searches.",
+                            Snackbar.LENGTH_LONG)
+                            .show();
                 } else {
                     Snackbar.make(mCoordinatorLayout, R.string.empty_search_text, Snackbar.LENGTH_LONG)
                             .show();
@@ -167,8 +204,6 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
             }
         });
 
-
-        //Handle orientation change
         if (savedInstanceState != null && mJobArrayList.size() != 0) {
             mJobArrayList = (ArrayList<Job>) savedInstanceState.getSerializable(KEY_SAVE_STATE);
             updateDisplay(mJobArrayList);
@@ -250,11 +285,11 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
         return DateUtils.getRelativeTimeSpanString(date.getTime());
     }
 
-    private void clearJobsStartSearchTask() {
+    private void clearJobs() {
         if (!mJobArrayList.isEmpty()) {
             mJobArrayList.clear();
         }
-        searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
+
     }
 
     public void searchJobTask(String page, String search, String location) {
@@ -345,8 +380,15 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
                             case R.id.nav_home:
                                 mToolbar.setTitle(R.string.app_name);
                                 mSwipeRefreshLayout.setEnabled(true);
-                                clearJobsStartSearchTask();
+                                clearJobs();
+                                searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
                                 menuItem.setChecked(true);
+                                mDrawerLayout.closeDrawers();
+                                return true;
+                            case R.id.nav_searches:
+                                FragmentManager fm = getActivity().getSupportFragmentManager();
+                                SavedSearchesDialog dialog = SavedSearchesDialog.newInstance(mSavedSearches);
+                                dialog.show(fm, "fragment_saved_searches");
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             case R.id.settings:
@@ -377,7 +419,8 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
             public boolean onQueryTextSubmit(String query) {
                 mSearchView.clearFocus();
                 mJobDescriptionString = query;
-                clearJobsStartSearchTask();
+                clearJobs();
+                searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
                 return true;
             }
 
@@ -404,6 +447,13 @@ public class JobListFragment extends StatedFragment implements EditLocationDialo
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onSearchSelected(String savedSearch) {
+        mJobDescriptionString = savedSearch;
+        clearJobs();
+        searchJobTask("0", savedSearch, mLocationString);
     }
 
     @Override
