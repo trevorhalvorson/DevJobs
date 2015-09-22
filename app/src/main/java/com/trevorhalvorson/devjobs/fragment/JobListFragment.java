@@ -472,6 +472,9 @@ public class JobListFragment extends StatedFragment
     @Override
     public void onFinishEditDialog(String inputText) {
         mLocationString = inputText;
+        if (mLocationString.equals("")) {
+            mLocationString = "ANYWHERE";
+        }
         showSnackbar("Location set to \"" + mLocationString + "\"");
     }
 
