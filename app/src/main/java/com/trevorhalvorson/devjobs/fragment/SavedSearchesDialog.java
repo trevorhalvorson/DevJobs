@@ -72,7 +72,7 @@ public class SavedSearchesDialog extends DialogFragment
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        dismiss();
         mListener.onSearchSelected(mStringArrayList.get(position));
+        dismiss();
     }
 }
