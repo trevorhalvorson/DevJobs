@@ -5,6 +5,8 @@
     android:background="?android:attr/selectableItemBackground"
     android:paddingBottom="20dp"
     android:paddingEnd="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
     android:paddingStart="16dp"
     android:paddingTop="16dp">
 
@@ -12,7 +14,9 @@
         android:id="@+id/jobTitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/jobDateTextView"
         android:layout_toStartOf="@+id/jobDateTextView"
         android:text="@string/job_title"
         android:textColor="#000000"
@@ -39,6 +43,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:text="@string/job_date"
         android:textColor="#9e9e9e" />
 
