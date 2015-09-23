@@ -2,6 +2,8 @@
 
 DevJobs is an open source [GitHub Jobs](https://jobs.github.com/) explorer for Android.
 
+[Google Play](https://play.google.com/store/apps/details?id=com.trevorhalvorson.devjobs)
+
 ![ScreenShot](/screenshots/screenshot1.png)
 
 ![ScreenShot](/screenshots/screenshot2.png)
