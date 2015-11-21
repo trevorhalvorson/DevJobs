@@ -113,7 +113,7 @@ public class JobDetailFragment extends Fragment {
                     getActivity().getSupportFragmentManager()
                             .beginTransaction()
                             .addToBackStack(null)
-                            .replace(R.id.fragment_container, jobWebViewFragment)
+                            .replace(R.id.viewpager, jobWebViewFragment)
                             .commit();
                 }
                 return true;
