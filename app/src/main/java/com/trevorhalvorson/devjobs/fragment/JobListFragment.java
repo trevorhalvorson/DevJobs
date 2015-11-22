@@ -1,21 +1,15 @@
 package com.trevorhalvorson.devjobs.fragment;
 
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -27,6 +21,7 @@ import com.trevorhalvorson.devjobs.GHJobsAPI;
 import com.trevorhalvorson.devjobs.R;
 import com.trevorhalvorson.devjobs.activity.MainActivity;
 import com.trevorhalvorson.devjobs.model.Job;
+import com.trevorhalvorson.devjobs.model.Search;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -34,8 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -44,24 +37,22 @@ import retrofit.client.Response;
 
 
 public class JobListFragment extends StatedFragment
-        implements EditLocationDialog.EditLocationDialogListener,
-        MainActivity.SearchListener,
-        SavedSearchesDialog.SavedSearchSelectedListener {
+        implements MainActivity.SearchListener,
+        SavedSearchesFragment.SavedSearchSelectedListener {
+
     private static final String TAG = JobListFragment.class.getSimpleName();
 
     private static final String KEY_SAVE_STATE = "KEY_JOB_LIST";
     private static final String ENDPOINT = "https://jobs.github.com";
-    private static final String SAVED_SEARCHES_KEY = "saved_searches_key";
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private CoordinatorLayout mCoordinatorLayout;
     private ProgressBar mProgressBarMargin, mProgressBar;
     private RecyclerView mRecyclerView;
     private ArrayList<Job> mJobArrayList;
-    private Set<String> mSavedSearches;
     private Adapter mJobAdapter;
-    private String mJobDescriptionString = "";
-    private String mLocationString = "";
+    private String mJobDescriptionString;
+    private String mLocationString;
     private GHJobsAPI mAPI;
     private int mPageCount;
     private LinearLayoutManager mLayoutManager;
@@ -87,30 +78,12 @@ public class JobListFragment extends StatedFragment
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putStringSet(SAVED_SEARCHES_KEY, mSavedSearches);
-        editor.apply();
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-        EditLocationDialog.setListener(this);
-        SavedSearchesDialog.setListener(this);
+        SavedSearchesFragment.setListener(this);
         MainActivity.setListener(this);
-
-        mSavedSearches = new TreeSet<>();
-
-        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-        Set<String> savedStrings = preferences.getStringSet(SAVED_SEARCHES_KEY, null);
-        if (savedStrings != null) {
-            mSavedSearches.addAll(savedStrings);
-        }
 
         RestAdapter mRestAdapter = new RestAdapter.Builder()
                 .setEndpoint(ENDPOINT)
@@ -156,9 +129,18 @@ public class JobListFragment extends StatedFragment
     }
 
     @Override
-    public void search(String query) {
+    public void search(String query, String location) {
         mJobDescriptionString = query;
-        searchJobTask("0", query, mLocationString);
+        clearJobs();
+        searchJobTask(Integer.toString(0), mJobDescriptionString, mLocationString);
+    }
+
+    @Override
+    public void onSearchSelected(Search savedSearch) {
+        mJobDescriptionString = savedSearch.getDescription();
+        mLocationString = savedSearch.getLocation();
+        clearJobs();
+        searchJobTask("0", mJobDescriptionString, mLocationString);
     }
 
     private class Holder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -327,70 +309,6 @@ public class JobListFragment extends StatedFragment
                 }
             }
         });
-    }
-
-    /*private void setNavigationDrawer(NavigationView navigationView) {
-        navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        onPause();
-                        switch (menuItem.getItemId()) {
-                            case R.id.nav_home:
-                                mToolbar.setTitle(R.string.app_name);
-                                mDrawerLayout.closeDrawers();
-                                mRecyclerView.smoothScrollToPosition(0);
-                                return true;
-                            case R.id.settings:
-                                Intent intent = new Intent();
-                                intent.setClassName(getContext(),
-                                        "com.trevorhalvorson.devjobs.activity.SettingsPreferenceActivity");
-                                startActivity(intent);
-                                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-                                mDrawerLayout.closeDrawers();
-                                return true;
-                            default:
-                                mDrawerLayout.closeDrawers();
-                                return true;
-                        }
-
-                    }
-                });
-    }*/
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_jobs_list, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_set_location:
-                FragmentManager fm = getActivity().getSupportFragmentManager();
-                EditLocationDialog dialog = EditLocationDialog.newInstance();
-                dialog.show(fm, "fragment_edit_location");
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public void onSearchSelected(String savedSearch) {
-        mJobDescriptionString = savedSearch;
-        clearJobs();
-        searchJobTask("0", savedSearch, mLocationString);
-    }
-
-    @Override
-    public void onFinishEditDialog(String inputText) {
-        mLocationString = inputText;
-        if (mLocationString.equals("")) {
-            mLocationString = "ANYWHERE";
-        }
-        showSnackbar("Location set to \"" + mLocationString + "\"");
     }
 
     private void showSnackbar(String text) {

@@ -27,7 +27,8 @@
     <string name="search_description">Enter job description</string>
     <string name="no_jobs_text">No jobs found</string>
     <string name="retrofit_error_text">Please check network connection and try again</string>
-    <string name="location">Location</string>
+    <string name="location">Set Location</string>
     <string name="empty_search_text">Job search query is empty.</string>
     <string name="saved_searches">Saved Searches</string>
+    <string name="save_search">Save Search</string>
 </resources>
