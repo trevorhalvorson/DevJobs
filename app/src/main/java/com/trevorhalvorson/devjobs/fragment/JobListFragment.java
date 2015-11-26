@@ -83,7 +83,7 @@ public class JobListFragment extends StatedFragment
         setRetainInstance(true);
 
         SavedSearchesFragment.setListener(this);
-        MainActivity.setListener(this);
+        MainActivity.setSearchListener(this);
 
         RestAdapter mRestAdapter = new RestAdapter.Builder()
                 .setEndpoint(ENDPOINT)

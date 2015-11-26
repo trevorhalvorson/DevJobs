@@ -31,17 +31,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements EditLocationDialog.EditLocationDialogListener,
-        SavedSearchesFragment.SavedSearchSelectedListener {
+        implements EditLocationDialog.EditLocationDialogListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String SAVED_SEARCHES_KEY = "saved_searches_key";
     private static final String NUM_SAVED_SEARCHES_KEY = "num_saved_searches_key";
 
+    private static SearchListener mSearchListener;
+    private static AddSearchListener mAddSearchListener;
+
     private DrawerLayout mDrawerLayout;
     private SearchView mSearchView;
-    private static SearchListener mListener;
     private ViewPager mViewPager;
     private List<Search> mSavedSearches;
     private String mLocationString;
@@ -51,15 +52,16 @@ public class MainActivity extends AppCompatActivity
         void search(String query, String location);
     }
 
-    @Override
-    public void onSearchSelected(Search savedSearch) {
-        mQuery = savedSearch.getDescription();
-        mLocationString = savedSearch.getLocation();
-        mListener.search(mQuery, mLocationString);
+    public interface AddSearchListener {
+        void addSearch();
     }
 
-    public static void setListener(SearchListener listener) {
-        mListener = listener;
+    public static void setSearchListener(SearchListener listener) {
+        mSearchListener = listener;
+    }
+
+    public static void setAddSearchListener(AddSearchListener listener) {
+        mAddSearchListener = listener;
     }
 
     @Override
@@ -75,6 +77,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onPause() {
         super.onPause();
+        savePrefs();
+    }
+
+    private void savePrefs() {
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         Gson gson = new Gson();
@@ -94,7 +100,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         EditLocationDialog.setListener(this);
-        SavedSearchesFragment.setListener(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -137,7 +142,7 @@ public class MainActivity extends AppCompatActivity
     private void setupViewPager(ViewPager viewPager) {
         Adapter adapter = new Adapter(getSupportFragmentManager());
         adapter.addFragment(new JobListFragment(), "Jobs");
-        adapter.addFragment(new SavedSearchesFragment(), "Saved Searches");
+        adapter.addFragment(new SavedSearchesFragment(mViewPager), "Saved Searches");
 
         viewPager.setAdapter(adapter);
     }
@@ -190,7 +195,7 @@ public class MainActivity extends AppCompatActivity
                 if (!query.isEmpty()) {
                     mSearchView.clearFocus();
                     mQuery = query;
-                    mListener.search(mQuery, mLocationString);
+                    mSearchListener.search(mQuery, mLocationString);
                 }
                 return true;
             }
@@ -224,7 +229,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void saveSearch() {
-        mSavedSearches.add(new Search(mQuery, mLocationString));
-        setupViewPager(mViewPager);
+        Search search = new Search(mQuery, mLocationString);
+        mSavedSearches.add(search);
+        savePrefs();
+        mAddSearchListener.addSearch();
     }
 }
