@@ -31,4 +31,5 @@
     <string name="empty_search_text">Job search query is empty.</string>
     <string name="saved_searches">Saved Searches</string>
     <string name="save_search">Save Search</string>
+    <string name="search_removed_sb">Saved Search Removed</string>
 </resources>

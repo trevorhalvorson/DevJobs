@@ -5,10 +5,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,8 +52,9 @@ public class SavedSearchesFragment extends Fragment
     }
 
     private static SavedSearchSelectedListener mListener;
+    private CoordinatorLayout mCoordinatorLayout;
     private RecyclerView mRecyclerView;
-    private Adapter mAdapter;
+    private SearchAdapter mSearchSearchAdapter;
     private List<Search> mSearchList = new ArrayList<>();
 
     @Override
@@ -63,10 +68,30 @@ public class SavedSearchesFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_saved_searches, container, false);
+        mCoordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator_layout);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.searchRecyclerView);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
+
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                final int position = viewHolder.getAdapterPosition();
+                Search searchRemoved = mSearchList.remove(position);
+                mSearchSearchAdapter.notifyItemRemoved(position);
+                Log.i(TAG, "onSwiped " + position + ": " + searchRemoved.toString());
+                removeSearch(searchRemoved);
+                Snackbar.make(mCoordinatorLayout, R.string.search_removed_sb, Snackbar.LENGTH_LONG).show();
+            }
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
 
         setupAdapter();
 
@@ -81,19 +106,19 @@ public class SavedSearchesFragment extends Fragment
             Search search = gson.fromJson(json, Search.class);
             mSearchList.add(search);
         }
-        mAdapter = new Adapter(mSearchList);
-        mRecyclerView.setAdapter(mAdapter);
+        mSearchSearchAdapter = new SearchAdapter(mSearchList);
+        mRecyclerView.setAdapter(mSearchSearchAdapter);
     }
 
     private void removeSearch(Search searchToRemove) {
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         Gson gson = new Gson();
-
         for (int i = 0; i < preferences.getInt(NUM_SAVED_SEARCHES_KEY, 0); i++) {
             String json = preferences.getString(SAVED_SEARCHES_KEY + i, "");
             Search search = gson.fromJson(json, Search.class);
-            if (search.equals(searchToRemove)) {
-                preferences.edit().remove(preferences.getString(SAVED_SEARCHES_KEY + i, "")).apply();
+            if (search.toString().equals(searchToRemove.toString())) {
+                Log.i(TAG, "Found Search to remove");
+                preferences.edit().remove(json).apply();
             }
         }
     }
@@ -103,14 +128,14 @@ public class SavedSearchesFragment extends Fragment
         setupAdapter();
     }
 
-    private class Holder extends RecyclerView.ViewHolder implements
+    private class SearchHolder extends RecyclerView.ViewHolder implements
             View.OnClickListener {
 
         private Search mSearch;
         private TextView mDescTextView;
         private TextView mLocTextView;
 
-        public Holder(View itemView) {
+        public SearchHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
 
@@ -134,25 +159,25 @@ public class SavedSearchesFragment extends Fragment
         }
     }
 
-    private class Adapter extends RecyclerView.Adapter<Holder> {
+    private class SearchAdapter extends RecyclerView.Adapter<SearchHolder> {
 
         private List<Search> mSearches = new ArrayList<>();
 
-        public Adapter(List<Search> searches) {
+        public SearchAdapter(List<Search> searches) {
             mSearches = searches;
         }
 
         @Override
-        public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public SearchHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(getActivity());
             View view = inflater.inflate(R.layout.list_item_search, parent, false);
-            return new Holder(view);
+            return new SearchHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(Holder holder, int position) {
+        public void onBindViewHolder(SearchHolder searchHolder, int position) {
             Search search = mSearches.get(position);
-            holder.bindSearch(search);
+            searchHolder.bindSearch(search);
         }
 
         @Override
