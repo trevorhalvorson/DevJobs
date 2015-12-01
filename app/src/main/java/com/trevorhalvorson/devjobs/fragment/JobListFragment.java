@@ -1,10 +1,10 @@
 package com.trevorhalvorson.devjobs.fragment;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,6 +19,7 @@ import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFra
 import com.trevorhalvorson.devjobs.DividerItemDecoration;
 import com.trevorhalvorson.devjobs.GHJobsAPI;
 import com.trevorhalvorson.devjobs.R;
+import com.trevorhalvorson.devjobs.activity.JobDetailActivity;
 import com.trevorhalvorson.devjobs.activity.MainActivity;
 import com.trevorhalvorson.devjobs.model.Job;
 import com.trevorhalvorson.devjobs.model.Search;
@@ -168,11 +169,9 @@ public class JobListFragment extends StatedFragment
 
         @Override
         public void onClick(View v) {
-            Fragment jobDetailFragment = JobDetailFragment.newInstance(mJob);
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .addToBackStack(null)
-                    .replace(R.id.viewpager, jobDetailFragment)
-                    .commit();
+            Intent detailIntent = new Intent(getActivity(), JobDetailActivity.class);
+            detailIntent.putExtra("job_key", mJob);
+            startActivity(detailIntent);
         }
     }
 
