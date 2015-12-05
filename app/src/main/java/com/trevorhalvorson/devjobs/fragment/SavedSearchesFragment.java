@@ -96,6 +96,7 @@ public class SavedSearchesFragment extends Fragment
     }
 
     private void setupAdapter() {
+        mSearchList.clear();
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         Gson gson = new Gson();
         for (String json : preferences.getStringSet(SAVED_SEARCHES_KEY, new TreeSet<String>())) {
@@ -105,26 +106,6 @@ public class SavedSearchesFragment extends Fragment
         mSearchSearchAdapter = new SearchAdapter(mSearchList);
         mRecyclerView.setAdapter(mSearchSearchAdapter);
     }
-
-    /*
-    SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        Set<String> jsonSet = new TreeSet<>();
-        Gson gson = new Gson();
-        for (Search search : mSavedSearches) {
-            jsonSet.add(gson.toJson(search));
-        }
-        editor.putStringSet(SAVED_SEARCHES_KEY, jsonSet);
-        editor.apply();
-        *********
-        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        Gson gson = new Gson();
-
-        for (String json : preferences.getStringSet(SAVED_SEARCHES_KEY, new TreeSet<String>())) {
-            Search search = gson.fromJson(json, Search.class);
-            mSavedSearches.add(search);
-        }
-     */
 
     private void removeSearch(Search searchToRemove) {
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
