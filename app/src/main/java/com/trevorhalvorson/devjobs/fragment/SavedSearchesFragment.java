@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -51,7 +51,6 @@ public class SavedSearchesFragment extends Fragment
     }
 
     private static SavedSearchSelectedListener mListener;
-    private CoordinatorLayout mCoordinatorLayout;
     private RecyclerView mRecyclerView;
     private SearchAdapter mSearchSearchAdapter;
     private List<Search> mSearchList = new ArrayList<>();
@@ -67,7 +66,6 @@ public class SavedSearchesFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_saved_searches, container, false);
-        mCoordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator_layout);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.searchRecyclerView);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -82,9 +80,22 @@ public class SavedSearchesFragment extends Fragment
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 final int position = viewHolder.getAdapterPosition();
-                Search searchRemoved = mSearchList.remove(position);
+                final Search searchRemoved = mSearchList.remove(position);
                 mSearchSearchAdapter.notifyItemRemoved(position);
                 removeSearch(searchRemoved);
+                Snackbar.make(
+                        getActivity().findViewById(R.id.main_content),
+                        searchRemoved.toString() + " removed",
+                        Snackbar.LENGTH_LONG)
+                        .setAction(R.string.sb_action, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                mSearchList.add(searchRemoved);
+                                undoRemoveSearch();
+                                setupAdapter();
+                            }
+                        })
+                        .show();
             }
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
@@ -109,15 +120,27 @@ public class SavedSearchesFragment extends Fragment
 
     private void removeSearch(Search searchToRemove) {
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-        Set<String> newSearchSet = new TreeSet<>();
+        SharedPreferences.Editor editor = preferences.edit();
+        Set<String> jsonSet = new TreeSet<>();
         Gson gson = new Gson();
         for (String search : preferences.getStringSet(SAVED_SEARCHES_KEY, new TreeSet<String>())) {
             if (!search.equals(gson.toJson(searchToRemove))) {
-                newSearchSet.add(search);
+                jsonSet.add(search);
             }
         }
+        editor.putStringSet(SAVED_SEARCHES_KEY, jsonSet);
+        editor.apply();
+    }
+
+    private void undoRemoveSearch() {
+        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putStringSet(SAVED_SEARCHES_KEY, newSearchSet);
+        Set<String> jsonSet = new TreeSet<>();
+        Gson gson = new Gson();
+        for (Search search : mSearchList) {
+            jsonSet.add(gson.toJson(search));
+        }
+        editor.putStringSet(SAVED_SEARCHES_KEY, jsonSet);
         editor.apply();
     }
 
