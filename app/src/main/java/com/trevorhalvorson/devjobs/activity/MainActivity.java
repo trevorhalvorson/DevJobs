@@ -29,6 +29,8 @@ import com.trevorhalvorson.devjobs.model.Search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class MainActivity extends AppCompatActivity
         implements EditLocationDialog.EditLocationDialogListener {
@@ -36,7 +38,6 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String SAVED_SEARCHES_KEY = "saved_searches_key";
-    private static final String NUM_SAVED_SEARCHES_KEY = "num_saved_searches_key";
 
     private static SearchListener mSearchListener;
     private static AddSearchListener mAddSearchListener;
@@ -72,26 +73,6 @@ public class MainActivity extends AppCompatActivity
                 "Location set to " + mLocationString,
                 Snackbar.LENGTH_LONG)
                 .show();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        savePrefs();
-    }
-
-    private void savePrefs() {
-        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        Gson gson = new Gson();
-        editor.putInt(NUM_SAVED_SEARCHES_KEY, mSavedSearches.size());
-        int savedCount = 0;
-        for (Search search : mSavedSearches) {
-            String json = gson.toJson(search);
-            editor.putString(SAVED_SEARCHES_KEY + savedCount, json);
-            savedCount++;
-        }
-        editor.apply();
     }
 
     @Override
@@ -132,8 +113,8 @@ public class MainActivity extends AppCompatActivity
 
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         Gson gson = new Gson();
-        for (int i = 0; i < preferences.getInt(NUM_SAVED_SEARCHES_KEY, 0); i++) {
-            String json = preferences.getString(SAVED_SEARCHES_KEY + i, "");
+
+        for (String json : preferences.getStringSet(SAVED_SEARCHES_KEY, new TreeSet<String>())) {
             Search search = gson.fromJson(json, Search.class);
             mSavedSearches.add(search);
         }
@@ -233,5 +214,17 @@ public class MainActivity extends AppCompatActivity
         mSavedSearches.add(search);
         savePrefs();
         mAddSearchListener.addSearch();
+    }
+
+    private void savePrefs() {
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Set<String> jsonSet = new TreeSet<>();
+        Gson gson = new Gson();
+        for (Search search : mSavedSearches) {
+            jsonSet.add(gson.toJson(search));
+        }
+        editor.putStringSet(SAVED_SEARCHES_KEY, jsonSet);
+        editor.apply();
     }
 }

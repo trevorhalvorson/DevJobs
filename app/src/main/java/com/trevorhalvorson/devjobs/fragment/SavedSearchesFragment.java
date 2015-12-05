@@ -6,13 +6,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +24,8 @@ import com.trevorhalvorson.devjobs.model.Search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by Trevor Halvorson on 9/21/2015.
@@ -35,7 +35,6 @@ public class SavedSearchesFragment extends Fragment
     private static final String TAG = SavedSearchesFragment.class.getSimpleName();
 
     private static final String SAVED_SEARCHES_KEY = "saved_searches_key";
-    private static final String NUM_SAVED_SEARCHES_KEY = "num_saved_searches_key";
 
     private ViewPager mViewPager;
 
@@ -85,9 +84,7 @@ public class SavedSearchesFragment extends Fragment
                 final int position = viewHolder.getAdapterPosition();
                 Search searchRemoved = mSearchList.remove(position);
                 mSearchSearchAdapter.notifyItemRemoved(position);
-                Log.i(TAG, "onSwiped " + position + ": " + searchRemoved.toString());
                 removeSearch(searchRemoved);
-                Snackbar.make(mCoordinatorLayout, R.string.search_removed_sb, Snackbar.LENGTH_LONG).show();
             }
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
@@ -101,8 +98,7 @@ public class SavedSearchesFragment extends Fragment
     private void setupAdapter() {
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         Gson gson = new Gson();
-        for (int i = 0; i < preferences.getInt(NUM_SAVED_SEARCHES_KEY, 0); i++) {
-            String json = preferences.getString(SAVED_SEARCHES_KEY + i, "");
+        for (String json : preferences.getStringSet(SAVED_SEARCHES_KEY, new TreeSet<String>())) {
             Search search = gson.fromJson(json, Search.class);
             mSearchList.add(search);
         }
@@ -110,17 +106,38 @@ public class SavedSearchesFragment extends Fragment
         mRecyclerView.setAdapter(mSearchSearchAdapter);
     }
 
+    /*
+    SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Set<String> jsonSet = new TreeSet<>();
+        Gson gson = new Gson();
+        for (Search search : mSavedSearches) {
+            jsonSet.add(gson.toJson(search));
+        }
+        editor.putStringSet(SAVED_SEARCHES_KEY, jsonSet);
+        editor.apply();
+        *********
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+
+        for (String json : preferences.getStringSet(SAVED_SEARCHES_KEY, new TreeSet<String>())) {
+            Search search = gson.fromJson(json, Search.class);
+            mSavedSearches.add(search);
+        }
+     */
+
     private void removeSearch(Search searchToRemove) {
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        Set<String> newSearchSet = new TreeSet<>();
         Gson gson = new Gson();
-        for (int i = 0; i < preferences.getInt(NUM_SAVED_SEARCHES_KEY, 0); i++) {
-            String json = preferences.getString(SAVED_SEARCHES_KEY + i, "");
-            Search search = gson.fromJson(json, Search.class);
-            if (search.toString().equals(searchToRemove.toString())) {
-                Log.i(TAG, "Found Search to remove");
-                preferences.edit().remove(json).apply();
+        for (String search : preferences.getStringSet(SAVED_SEARCHES_KEY, new TreeSet<String>())) {
+            if (!search.equals(gson.toJson(searchToRemove))) {
+                newSearchSet.add(search);
             }
         }
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putStringSet(SAVED_SEARCHES_KEY, newSearchSet);
+        editor.apply();
     }
 
     @Override
