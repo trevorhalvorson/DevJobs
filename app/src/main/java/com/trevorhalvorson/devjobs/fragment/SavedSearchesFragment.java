@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -37,6 +38,7 @@ public class SavedSearchesFragment extends Fragment
     private static final String SAVED_SEARCHES_KEY = "saved_searches_key";
 
     private ViewPager mViewPager;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     public SavedSearchesFragment(ViewPager viewPager) {
         mViewPager = viewPager;
@@ -65,11 +67,20 @@ public class SavedSearchesFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_saved_searches, container, false);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.searchRecyclerView);
+        View rootView = inflater.inflate(R.layout.fragment_saved_searches, container, false);
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.searchRecyclerView);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setColorSchemeColors(
+                getResources().getColor(R.color.primary_dark));
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                setupAdapter();
+            }
+        });
 
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
@@ -103,7 +114,7 @@ public class SavedSearchesFragment extends Fragment
 
         setupAdapter();
 
-        return view;
+        return rootView;
     }
 
     private void setupAdapter() {
@@ -116,6 +127,9 @@ public class SavedSearchesFragment extends Fragment
         }
         mSearchSearchAdapter = new SearchAdapter(mSearchList);
         mRecyclerView.setAdapter(mSearchSearchAdapter);
+        if (mSwipeRefreshLayout.isRefreshing()) {
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     private void removeSearch(Search searchToRemove) {
