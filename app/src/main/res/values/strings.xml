@@ -32,4 +32,6 @@
     <string name="saved_searches">Saved Searches</string>
     <string name="save_search">Save Search</string>
     <string name="search_removed_sb">Saved Search Removed</string>
+    <string name="sb_added_search">" added to saved searches"</string>
+    <string name="sc_loc_set">"Location set to "</string>
 </resources>

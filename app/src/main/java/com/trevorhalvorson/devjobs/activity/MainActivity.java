@@ -67,12 +67,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onFinishEditDialog(String inputText) {
-        mLocationString = inputText;
-        Snackbar.make(
-                findViewById(R.id.main_content),
-                "Location set to " + mLocationString,
-                Snackbar.LENGTH_LONG)
-                .show();
+        if (!inputText.isEmpty()) {
+            mLocationString = inputText;
+            showSnackBar(getString(R.string.sc_loc_set) + mLocationString);
+        }
     }
 
     @Override
@@ -214,6 +212,8 @@ public class MainActivity extends AppCompatActivity
         mSavedSearches.add(search);
         savePrefs();
         mAddSearchListener.addSearch();
+
+        showSnackBar(search.toString() + getString(R.string.sb_added_search));
     }
 
     private void savePrefs() {
@@ -226,5 +226,13 @@ public class MainActivity extends AppCompatActivity
         }
         editor.putStringSet(SAVED_SEARCHES_KEY, jsonSet);
         editor.apply();
+    }
+
+    private void showSnackBar(String snackBarMessage) {
+        Snackbar.make(
+                findViewById(R.id.main_content),
+                snackBarMessage,
+                Snackbar.LENGTH_LONG)
+                .show();
     }
 }
