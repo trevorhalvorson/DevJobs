@@ -171,6 +171,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextSubmit(String query) {
                 setCurrentItem(0, true);
+                query = query.trim();
                 if (!query.isEmpty()) {
                     mSearchView.clearFocus();
                     mQuery = query;
