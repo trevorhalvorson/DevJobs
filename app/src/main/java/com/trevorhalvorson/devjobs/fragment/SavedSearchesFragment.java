@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,7 +19,6 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.trevorhalvorson.devjobs.DividerItemDecoration;
 import com.trevorhalvorson.devjobs.R;
-import com.trevorhalvorson.devjobs.activity.MainActivity;
 import com.trevorhalvorson.devjobs.model.Search;
 
 import java.util.ArrayList;
@@ -31,18 +29,9 @@ import java.util.TreeSet;
 /**
  * Created by Trevor Halvorson on 9/21/2015.
  */
-public class SavedSearchesFragment extends Fragment
-        implements MainActivity.AddSearchListener {
+public class SavedSearchesFragment extends Fragment {
     private static final String TAG = SavedSearchesFragment.class.getSimpleName();
-
     private static final String SAVED_SEARCHES_KEY = "saved_searches_key";
-
-    private ViewPager mViewPager;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-
-    public SavedSearchesFragment(ViewPager viewPager) {
-        mViewPager = viewPager;
-    }
 
     public interface SavedSearchSelectedListener {
         void onSearchSelected(Search savedSearch);
@@ -54,14 +43,9 @@ public class SavedSearchesFragment extends Fragment
 
     private static SavedSearchSelectedListener mListener;
     private RecyclerView mRecyclerView;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private SearchAdapter mSearchSearchAdapter;
     private List<Search> mSearchList = new ArrayList<>();
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        MainActivity.setAddSearchListener(this);
-    }
 
     @Nullable
     @Override
@@ -158,11 +142,6 @@ public class SavedSearchesFragment extends Fragment
         editor.apply();
     }
 
-    @Override
-    public void addSearch() {
-        setupAdapter();
-    }
-
     private class SearchHolder extends RecyclerView.ViewHolder implements
             View.OnClickListener {
 
@@ -189,7 +168,6 @@ public class SavedSearchesFragment extends Fragment
 
         @Override
         public void onClick(View v) {
-            mViewPager.setCurrentItem(0, true);
             mListener.onSearchSelected(mSearch);
         }
     }

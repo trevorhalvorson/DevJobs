@@ -1,6 +1,7 @@
 package com.trevorhalvorson.devjobs.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -40,7 +41,6 @@ public class MainActivity extends AppCompatActivity
     private static final String SAVED_SEARCHES_KEY = "saved_searches_key";
 
     private static SearchListener mSearchListener;
-    private static AddSearchListener mAddSearchListener;
 
     private DrawerLayout mDrawerLayout;
     private SearchView mSearchView;
@@ -53,16 +53,8 @@ public class MainActivity extends AppCompatActivity
         void search(String query, String location);
     }
 
-    public interface AddSearchListener {
-        void addSearch();
-    }
-
     public static void setSearchListener(SearchListener listener) {
         mSearchListener = listener;
-    }
-
-    public static void setAddSearchListener(AddSearchListener listener) {
-        mAddSearchListener = listener;
     }
 
     @Override
@@ -101,6 +93,12 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.settings:
+                        Intent intent = new Intent(MainActivity.this, SettingsPreferenceActivity.class);
+                        startActivity(intent);
+                        break;
+                }
                 item.setChecked(true);
                 mDrawerLayout.closeDrawers();
                 return true;
@@ -121,7 +119,7 @@ public class MainActivity extends AppCompatActivity
     private void setupViewPager(ViewPager viewPager) {
         Adapter adapter = new Adapter(getSupportFragmentManager());
         adapter.addFragment(new JobListFragment(), "Jobs");
-        adapter.addFragment(new SavedSearchesFragment(mViewPager), "Saved Searches");
+        adapter.addFragment(new SavedSearchesFragment(), "Saved Searches");
 
         viewPager.setAdapter(adapter);
     }
@@ -212,8 +210,6 @@ public class MainActivity extends AppCompatActivity
         Search search = new Search(mQuery, mLocationString);
         mSavedSearches.add(search);
         savePrefs();
-        mAddSearchListener.addSearch();
-
         showSnackBar(search.toString() + getString(R.string.sb_added_search));
     }
 
