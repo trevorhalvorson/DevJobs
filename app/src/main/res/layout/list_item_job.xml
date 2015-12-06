@@ -22,7 +22,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|left"
-        android:text="@string/company"
         android:textColor="#000000"
         tools:text="Company"/>
 
@@ -31,7 +30,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|left"
-        android:text="@string/job_location"
         android:textColor="#000000"
         tools:text="Location"/>
 
@@ -40,7 +38,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|right"
-        android:text="@string/job_date"
         android:textColor="#9e9e9e"
         tools:text="Date"/>
 
