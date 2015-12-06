@@ -37,14 +37,13 @@ public class MainActivity extends AppCompatActivity
         implements EditLocationDialog.EditLocationDialogListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
     private static final String SAVED_SEARCHES_KEY = "saved_searches_key";
 
     private static SearchListener mSearchListener;
+    private static ViewPager mViewPager;
 
     private DrawerLayout mDrawerLayout;
     private SearchView mSearchView;
-    private ViewPager mViewPager;
     private List<Search> mSavedSearches;
     private String mLocationString;
     private String mQuery;
@@ -122,6 +121,10 @@ public class MainActivity extends AppCompatActivity
         adapter.addFragment(new SavedSearchesFragment(), "Saved Searches");
 
         viewPager.setAdapter(adapter);
+    }
+
+    public static void setCurrentTab(int tabPosition) {
+        mViewPager.setCurrentItem(tabPosition);
     }
 
     public void setCurrentItem(int item, boolean smoothScroll) {

@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.trevorhalvorson.devjobs.DividerItemDecoration;
 import com.trevorhalvorson.devjobs.R;
+import com.trevorhalvorson.devjobs.activity.MainActivity;
 import com.trevorhalvorson.devjobs.model.Search;
 
 import java.util.ArrayList;
@@ -168,6 +169,7 @@ public class SavedSearchesFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
+            MainActivity.setCurrentTab(0);
             mListener.onSearchSelected(mSearch);
         }
     }
