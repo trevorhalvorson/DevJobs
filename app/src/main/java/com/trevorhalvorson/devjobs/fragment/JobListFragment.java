@@ -133,7 +133,9 @@ public class JobListFragment extends StatedFragment
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        searchJobTask("", "", "");
+        if (mJobAdapter == null) {
+            searchJobTask("", "", "");
+        }
     }
 
     @Override
