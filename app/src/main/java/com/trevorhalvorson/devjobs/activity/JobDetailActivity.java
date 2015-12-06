@@ -7,9 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.view.Menu;
@@ -61,13 +59,6 @@ public class JobDetailActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_detail, menu);
-        MenuItem menuItem = menu.findItem(R.id.menu_item_share);
-
-        ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-
-        if (mJobUrl != null) {
-            shareActionProvider.setShareIntent(shareIntent());
-        }
         return true;
     }
 
@@ -90,16 +81,16 @@ public class JobDetailActivity extends AppCompatActivity {
                             .replace(R.id.detail_coord_layout, jobWebViewFragment)
                             .commit();
                 }
-                return true;
+                return false;
+            case R.id.menu_item_share:
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, mJobUrl);
+                shareIntent.setType("text/plain");
+                startActivity(shareIntent);
+                return false;
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    private Intent shareIntent() {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, mJobUrl);
-        return shareIntent;
     }
 }
